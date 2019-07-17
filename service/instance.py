@@ -2,6 +2,7 @@ import os.path
 import time
 import json
 import uuid
+import ansible
 
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
@@ -192,8 +193,8 @@ def start_instance(
             esh_driver,
             esh_instance,
             deploy=True,
-        # NOTE: after removing FIXME, This
-        # parameter can be removed as well
+    # NOTE: after removing FIXME, This
+    # parameter can be removed as well
             core_identity_uuid=identity_uuid
         )
 
@@ -474,8 +475,8 @@ def resume_instance(
             esh_driver,
             esh_instance,
             deploy=deploy,
-        # NOTE: after removing FIXME, This
-        # parameter can be removed as well
+    # NOTE: after removing FIXME, This
+    # parameter can be removed as well
             core_identity_uuid=identity_uuid
         )
     # FIXME: These three lines are necessary to repair our last network outage.
@@ -540,8 +541,8 @@ def unshelve_instance(
             esh_driver,
             esh_instance,
             deploy=True,
-        # NOTE: after removing FIXME, This
-        # parameter can be removed as well
+    # NOTE: after removing FIXME, This
+    # parameter can be removed as well
             core_identity_uuid=identity_uuid
         )
 
@@ -927,7 +928,9 @@ def _boot_volume(
             "The Provider: %s can't create bootable volumes" % driver.provider
         )
     extra_args = _extra_openstack_args(
-        identity, ex_metadata={"bootable_volume": True}
+        identity, ex_metadata={
+            "bootable_volume": True
+        }
     )
     kwargs.update(extra_args)
     boot_success, new_instance = driver.boot_volume(
@@ -1404,8 +1407,7 @@ def _get_default_rules():
         }, {
             "direction": "ingress",
             "ethertype": "IPv6",
-        },
-        {
+        }, {
             "direction": "ingress",
             "port_range_min": 22,
             "port_range_max": 22,
@@ -1436,8 +1438,8 @@ def neutron_set_security_group_rules(
                     }
             }
             if 'remote_ip_prefix' in sg_rule:
-                rule_body['security_group_rule']['remote_ip_prefix'] = sg_rule[
-                    'remote_ip_prefix']
+                rule_body['security_group_rule']['remote_ip_prefix'
+                                                ] = sg_rule['remote_ip_prefix']
                 rule_body['security_group_rule'].pop("remote_group_id")
             user_neutron.create_security_group_rule(body=rule_body)
         except Conflict:
@@ -1459,8 +1461,8 @@ def find_security_group(security_group_name, user_neutron):
 
 
 def get_or_create_security_group(security_group_name, user_neutron):
-    security_group_list = user_neutron.list_security_groups(
-    )[u'security_groups']
+    security_group_list = user_neutron.list_security_groups()[u'security_groups'
+                                                             ]
     security_group = [
         sgroup for sgroup in security_group_list
         if sgroup[u'name'] == security_group_name
@@ -1742,6 +1744,7 @@ def _extra_openstack_args(core_identity, ex_metadata={}):
     username = core_identity.created_by.username
     tenant_name = credentials.get('ex_tenant_name')
     has_secret = credentials.get('secret') is not None
+    ex_userdata = _cloud_config_userdata(username)
     ex_metadata.update(
         {
             'tmp_status': 'initializing',
@@ -1752,8 +1755,7 @@ def _extra_openstack_args(core_identity, ex_metadata={}):
     if has_secret and getattr(settings, 'ATMOSPHERE_KEYPAIR_NAME'):
         ex_keyname = settings.ATMOSPHERE_KEYPAIR_NAME
     else:
-        user = core_identity.created_by
-        user_keys = get_user_ssh_keys(user.username)
+        user_keys = get_user_ssh_keys(username)
         if not user_keys:
             raise Exception(
                 "User has not yet created a key -- instance cannot be launched"
@@ -1761,7 +1763,39 @@ def _extra_openstack_args(core_identity, ex_metadata={}):
         # FIXME: In a new PR, allow user to select the keypair for launching
         user_key = user_keys[0]
         ex_keyname = user_key.name
-    return {"ex_metadata": ex_metadata, "ex_keyname": ex_keyname}
+    return {
+        "ex_metadata": ex_metadata,
+        "ex_keyname": ex_keyname,
+        "ex_userdata": ex_userdata
+    }
+
+
+def _cloud_config_userdata(username):
+    ssh_keys = '\n'.join(
+        map(
+            lambda s: '    - {}'.format(s.pub_key), get_user_ssh_keys(username)
+        )
+    )
+    ex_userdata = """\
+#cloud-config
+package_update: true
+packages:
+  - python-pip
+groups:
+  - users
+  - docker
+users:
+  - name: {username}
+    sudo: ['ALL=(ALL) ALL']
+    groups: sudo, users, docker
+    shell: /bin/bash
+    ssh_authorized_keys:
+{ssh_keys}
+runcmd:
+  - [pip, install, ansible=={ansible_version}]
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/ansible-cloud-config-test.git ansible/playbooks/playbook.yml"
+""".format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__)
+    return ex_userdata
 
 
 def _get_init_script(
