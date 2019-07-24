@@ -1794,7 +1794,14 @@ users:
 {ssh_keys}
 runcmd:
   - [pip, install, ansible=={ansible_version}]
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/ansible-cloud-config-test.git ansible/playbooks/playbook.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/instance_deploy/00_setup_ssh.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/instance_deploy/10_setup_pkg_mgr.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/instance_deploy/18_atmo_local_user_account.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/instance_deploy/30_post_user_install.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/instance_deploy/41_shell_access.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/user_deploy/00_inject_ssh_keys.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init ansible/playbooks/user_deploy/10_post_boot.yml"
 """.format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__)
     return ex_userdata
 
