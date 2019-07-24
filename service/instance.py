@@ -1789,6 +1789,7 @@ users:
     sudo: ['ALL=(ALL) ALL']
     groups: sudo, users, docker
     shell: /bin/bash
+    lock_passwd: false
     ssh_authorized_keys:
 {ssh_keys}
 runcmd:
