@@ -1794,15 +1794,18 @@ users:
     lock_passwd: false
     ssh_authorized_keys:
 {ssh_keys}
+write_files:
+  - content: |
+        {extra_vars}
+    path: /root/vars.json
 runcmd:
   - [pip, install, ansible=={ansible_version}]
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/instance_deploy/00_setup_ssh.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/instance_deploy/10_setup_pkg_mgr.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/instance_deploy/18_atmo_local_user_account.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/instance_deploy/30_post_user_install.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/instance_deploy/41_shell_access.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e {extra_vars} ansible/playbooks/user_deploy/10_post_boot.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/00_setup_ssh.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/10_setup_pkg_mgr.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/18_atmo_local_user_account.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
+  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/30_post_user_install.yml"
+  - [rm, -f, /root/vars.json]
 """.format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars)
     return ex_userdata
 
