@@ -1798,6 +1798,9 @@ write_files:
   - content: |
         {extra_vars}
     path: /root/vars.json
+  - content: |
+        {motd}
+    path: /etc/motd
 runcmd:
   - [pip, install, ansible=={ansible_version}]
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/00_setup_ssh.yml"
@@ -1806,7 +1809,7 @@ runcmd:
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/30_post_user_install.yml"
   - [rm, -f, /root/vars.json]
-""".format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars)
+""".format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars, motd=settings.SSH_MOTD)
     return ex_userdata
 
 
