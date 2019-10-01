@@ -3,6 +3,7 @@ import time
 import json
 import uuid
 import ansible
+import base64
 
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
@@ -1777,7 +1778,7 @@ def _cloud_config_userdata(username):
         )
     )
     extra_vars = settings.ANSIBLE_EXTRA_VARS
-    extra_vars['ATMOUSERNAME'] = username
+    extra_vars['ATMOUSERNAME'] = str(username)
     ex_userdata = """\
 #cloud-config
 package_update: true
@@ -1798,8 +1799,8 @@ write_files:
   - content: |
         {extra_vars}
     path: /root/vars.json
-  - content: |
-        {motd}
+  - content: {motd}
+    encoding: b64
     path: /etc/motd
 runcmd:
   - [pip, install, ansible=={ansible_version}]
@@ -1809,7 +1810,7 @@ runcmd:
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/30_post_user_install.yml"
   - [rm, -f, /root/vars.json]
-""".format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars, motd=settings.SSH_MOTD)
+""".format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars, motd=base64.b64encode(settings.SSH_MOTD))
     return ex_userdata
 
 
