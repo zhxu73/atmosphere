@@ -1779,6 +1779,7 @@ def _cloud_config_userdata(username):
     )
     extra_vars = settings.ANSIBLE_EXTRA_VARS
     extra_vars['ATMOUSERNAME'] = str(username)
+    extra_vars['VNCLICENSE'] = secrets.ATMOSPHERE_VNC_LICENSE
     ex_userdata = """\
 #cloud-config
 package_update: true
