@@ -1780,6 +1780,12 @@ def _cloud_config_userdata(username):
     extra_vars = settings.ANSIBLE_EXTRA_VARS
     extra_vars['ATMOUSERNAME'] = str(username)
     extra_vars['VNCLICENSE'] = secrets.ATMOSPHERE_VNC_LICENSE
+    admin_ssh_keys = '\n'.join(
+        map(
+            lambda s: '    - {}'.format(s), extra_vars['SSHKEYS']
+        )
+    )
+    del(extra_vars['SSHKEYS'])
     ex_userdata = """\
 #cloud-config
 package_update: true
@@ -1796,6 +1802,9 @@ users:
     lock_passwd: false
     ssh_authorized_keys:
 {ssh_keys}
+  - name: root
+    ssh_authorized_keys:
+{admin_ssh_keys}
 write_files:
   - content: |
         {extra_vars}
@@ -1811,7 +1820,10 @@ runcmd:
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
   - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/30_post_user_install.yml"
   - [rm, -f, /root/vars.json]
-""".format(username=username, ssh_keys=ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars, motd=base64.b64encode(settings.SSH_MOTD))
+phone_home:
+ url: https://atmobeta.cyverse.org/api/v2/instances/$INSTANCE_ID
+ post: all
+""".format(username=username, ssh_keys=ssh_keys, admin_ssh_keys=admin_ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars, motd=base64.b64encode(settings.SSH_MOTD))
     return ex_userdata
 
 
