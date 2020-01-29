@@ -739,6 +739,7 @@ def launch_instance(
     deploy=True,
     **launch_kwargs
 ):
+    deploy = False
     """
     USE THIS TO LAUNCH YOUR INSTANCE FROM THE REPL!
     Initialization point --> launch_*_instance --> ..
