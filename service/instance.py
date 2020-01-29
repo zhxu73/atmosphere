@@ -1773,19 +1773,19 @@ def _extra_openstack_args(core_identity, ex_metadata={}):
 
 
 def _cloud_config_userdata(username):
+    extra_vars = settings.ANSIBLE_EXTRA_VARS
     ssh_keys = '\n'.join(
         map(
             lambda s: '    - {}'.format(s.pub_key), get_user_ssh_keys(username)
         )
     )
-    extra_vars = settings.ANSIBLE_EXTRA_VARS
-    extra_vars['ATMOUSERNAME'] = str(username)
-    extra_vars['VNCLICENSE'] = secrets.ATMOSPHERE_VNC_LICENSE
     admin_ssh_keys = '\n'.join(
         map(
             lambda s: '    - {}'.format(s), extra_vars['SSHKEYS']
         )
     )
+    extra_vars['ATMOUSERNAME'] = str(username)
+    extra_vars['VNCLICENSE'] = secrets.ATMOSPHERE_VNC_LICENSE
     del(extra_vars['SSHKEYS'])
     ex_userdata = """\
 #cloud-config
@@ -1814,13 +1814,21 @@ write_files:
     encoding: b64
     path: /etc/motd
 runcmd:
-  - [pip, install, ansible=={ansible_version}]
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/00_setup_ssh.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/10_setup_pkg_mgr.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/18_atmo_local_user_account.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
-  - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles ansible-pull -U https://github.com/calvinmclean/atmosphere-ansible.git -C cloud-init -e @/root/vars.json ansible/playbooks/instance_deploy/30_post_user_install.yml"
-  - [rm, -f, /root/vars.json]
+  - ["pip", "install", "ansible=={ansible_version}"]
+  - - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles"
+    - "ansible-pull"
+    - "-U"
+    - "https://github.com/calvinmclean/atmosphere-ansible.git"
+    - "-C"
+    - "cloud-init"
+    - "-e"
+    - "@/root/vars.json"
+    - "ansible/playbooks/instance_deploy/00_setup_ssh.yml"
+    - "ansible/playbooks/instance_deploy/10_setup_pkg_mgr.yml"
+    - "ansible/playbooks/instance_deploy/18_atmo_local_user_account.yml"
+    - "ansible/playbooks/instance_deploy/20_atmo_user_install.yml"
+    - "ansible/playbooks/instance_deploy/30_post_user_install.yml"
+  - ["rm", "-f", "/root/vars.json"]
 phone_home:
  url: https://atmobeta.cyverse.org/api/v2/instances/$INSTANCE_ID
  post: all
