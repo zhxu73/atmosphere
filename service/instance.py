@@ -1818,7 +1818,7 @@ runcmd:
   - - "ANSIBLE_ROLES_PATH=/root/.ansible/pull/$(hostname)/ansible/roles"
     - "ansible-pull"
     - "-U"
-    - "https://github.com/calvinmclean/atmosphere-ansible.git"
+    - "https://github.com/zhxu73/atmosphere-ansible.git"
     - "-C"
     - "cloud-init"
     - "-e"
@@ -1830,7 +1830,7 @@ runcmd:
     - "ansible/playbooks/instance_deploy/30_post_user_install.yml"
   - ["rm", "-f", "/root/vars.json"]
 phone_home:
- url: https://atmobeta.cyverse.org/api/v2/instances/$INSTANCE_ID
+ url: https://atmobeta.cyverse.org/api/v2/instance_phone_home/$INSTANCE_ID
  post: all
 """.format(username=username, ssh_keys=ssh_keys, admin_ssh_keys=admin_ssh_keys, ansible_version=ansible.__version__, extra_vars=extra_vars, motd=base64.b64encode(settings.SSH_MOTD))
     return ex_userdata

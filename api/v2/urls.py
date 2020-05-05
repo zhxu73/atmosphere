@@ -166,4 +166,5 @@ urlpatterns = [
         name='web_token'
     ),
     url(r'^admin/', include(v2_admin_urls, namespace="admin")),
+    url(r'^instance_phone_home/', views.InstancePhoneHomeView.as_view()),
 ]
