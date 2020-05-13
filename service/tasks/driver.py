@@ -674,6 +674,25 @@ def get_idempotent_deploy_chain(
     return start_task
 
 
+def get_wait_cloud_init_chain(driverCls, provider, identity, instance):
+    """
+    Get chain that set the instance status to 'deploying'.
+
+    Used to when deployment playbooks are run by cloud-init, thus instance
+    does not finish deployment until cloud-init finished.
+    """
+    final_update = {
+        'tmp_status': 'deploying',
+        'fault_message': "",
+        'fault_trace': ""
+    }
+    remove_status_task = update_metadata.si(
+        driverCls, provider, identity, instance.id, final_update
+    )
+    start_chain = remove_status_task
+    return start_chain
+
+
 def get_remove_status_chain(driverCls, provider, identity, instance):
     if instance.extra['metadata'].get('iplant_suspend_fix'):
         replace = True
@@ -838,11 +857,13 @@ def get_chain_from_active_with_ip(
     # deployment takes place (SSH established. Time spent from
     # 'add_floating_ip' to SSH established is considered 'networking' time)
     if not deploy:
-        remove_status_chain = get_remove_status_chain(
+        remove_status_chain = get_wait_cloud_init_chain(
             driverCls, provider, identity, instance
         )
         deploy_ready_task.link(remove_status_chain)
-        # Active and deployable. Ready for use!
+        # instance remains in 'deploying' after the deploy_ready_task
+        # and has to wait for cloud-init to finish deployment playbooks
+        # locally.
         return start_chain
 
     # Start building a deploy chain
