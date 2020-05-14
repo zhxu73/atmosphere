@@ -50,57 +50,69 @@ class InstancePhoneHomeView(APIView):
         """
 
         now_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        status_logger.debug(
-            "{}, {}".format(now_time, request.data)
+        logger.debug(
+            "{}, phone_home request received".format(now_time)
         )
-        logger.debug("client IP: {}".format(self._get_client_ip(request)))
 
-        try:
-            instance_id = request.data["instance_id"]
-            self._set_instance_active(instance_id)
-        except KeyError as e:
-            logger.exception(
-                "Missing key in POST request payload. {}".format(e.message)
-            )
-            return failure_response(status.HTTP_400_BAD_REQUEST, str(e.message))
+        # find instance
+        if "instance_id" not in request.data:
+            logger.exception("missing instance_id in phone_home request payload, return 400.")
+            return failure_response(status.HTTP_400_BAD_REQUEST, "")
+        instance_id = request.data["instance_id"]
+
+        instance = find_instance(instance_id)
+        if not instance:
+            logger.exception("phone_home request, {}, instance not found, return 400.".format(instance_id))
+            return failure_response(status.HTTP_400_BAD_REQUEST, "")
+
+        # check if the client/sender of the request has the same IP as
+        # the instance itself
+        if not _check_client_ip(request, instance):
+            return failure_response(status.HTTP_409_CONFLICT, "")
+
+        # set instance status to active
+        self._set_instance_active(instance)
 
         return Response("atmo phone_home received")
 
-    def _set_instance_active(self, instance_id):
-        """
-        Set the status of the instance to active
-        """
-        instance = find_instance(instance_id)
-        try:
-            status_update = {'tmp_status': ''}
-            update_instance_metadata(instance, status_update)
-            logger.debug("Set instance status to active")
-        except Exception as exc:
-            logger.exception("Error occurred updating instance status")
-            return Response(exc.message, status=status.HTTP_409_CONFLICT)
+def _set_instance_active(instance):
+    """
+    Set the status of the instance to active
+    """
+    try:
+        status_update = {'tmp_status': ''}
+        update_instance_metadata(instance, status_update)
+        logger.debug("phone_home request, {}, Set instance status to active".format(instance.provider_alias))
+        status_logger.debug("phone_home request, {}, Set instance status to active".format(instance.provider_alias))
+    except Exception as exc:
+        logger.exception("Error occurred updating instance status")
+        return Response(exc.message, status=status.HTTP_409_CONFLICT)
 
-    def _check_instance_status(self, instance_id):
-        """
-        Check if the instance is waiting for phone_home request
-        """
-        pass
+def _check_instance_status(instance):
+    """
+    Check if the instance is waiting for phone_home request
+    """
+    pass
 
-    def _check_client_ip(self, instance_id, ip_addr):
-        """
-        Check if the request is sent from the said instance (instance id from payload)
-        """
-        pass
+def _check_client_ip(request, instance):
+    """
+    Check if the request is sent from the said instance.
+    Return True if same IP
+    """
+    client_ip = _get_client_ip(request)
+    logger.debug("phone_home request, client IP: {}".format(client_ip))
+    return client_ip == str(instance.ip_address)
 
-    def _get_client_ip(self, request):
-        """
-        Fetch the ip of client
-        """
-        try:
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                ip = x_forwarded_for.split(',')[0]
-            else:
-                ip = request.META.get('REMOTE_ADDR')
-            return ip
-        except KeyError:
-            return None
+def _get_client_ip(request):
+    """
+    Fetch the ip of client
+    """
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    except KeyError:
+        return None
