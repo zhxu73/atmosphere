@@ -68,6 +68,12 @@ class InstancePhoneHomeView(APIView):
         # check if the client/sender of the request has the same IP as
         # the instance itself
         if not _check_client_ip(request, instance):
+            logger.debug("phone_home request, {}, sender ip not consistent with the instance ip, return 409".format(instance_id))
+            return failure_response(status.HTTP_409_CONFLICT, "")
+
+        # check if the instance is in deploying
+        if not _check_instance_status(instance):
+            logger.debug("phone_home request, {}, instance is not in 'deploying' state, return 409".format(instance_id))
             return failure_response(status.HTTP_409_CONFLICT, "")
 
         # set instance status to active
@@ -92,7 +98,9 @@ def _check_instance_status(instance):
     """
     Check if the instance is waiting for phone_home request
     """
-    pass
+    last_history = instance.get_last_history()
+    logger.debug("phone_home request, {}, instance state: {}".format(instance.id, last_history))
+    return last_history.status.name == "deploying" and len(last_history.activity) == 0
 
 def _check_client_ip(request, instance):
     """
