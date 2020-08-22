@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q
 from django.http import Http404
 from rest_framework.generics import get_object_or_404
+from functools import reduce
 
 
 class MultipleFieldLookup(object):

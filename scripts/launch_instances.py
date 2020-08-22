@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import os, traceback
 import sys, time
@@ -87,11 +88,11 @@ def main():
         sys.exit(1)
 
     if args.size_list:
-        print "ID\tName\tCPU\tMemory"
+        print("ID\tName\tCPU\tMemory")
         for s in Size.objects.filter(
             only_current(), provider=provider
         ).order_by('id'):
-            print "%s\t%s\t%d\t%d" % (s.id, s.name, s.cpu, s.mem)
+            print("%s\t%s\t%d\t%d" % (s.id, s.name, s.cpu, s.mem))
         sys.exit(0)
 
     handle_size(args, provider)
@@ -107,21 +108,21 @@ def main():
     for idx, username in enumerate(user_list):
         try:
             if idx != 0:
-                print "Sleep 30 seconds"
+                print("Sleep 30 seconds")
                 time.sleep(30)
-                print "Awake, ready to launch"
+                print("Awake, ready to launch")
             launch_instance_for_user(args, machines, size, provider, username)
         except Exception as e:
-            print "Instance launch *FAILED*: %s" % e
+            print("Instance launch *FAILED*: %s" % e)
             traceback.print_exc(file=sys.stdout)
 
 
 def launch_instance_for_user(args, machines, size, provider, username):
-    print "Using Username %s." % username
+    print("Using Username %s." % username)
     user = User.objects.get(username=username)
     handle_count(args)
-    print "Using Provider %s." % provider
-    print "Using Size %s." % size.name
+    print("Using Provider %s." % provider)
+    print("Using Size %s." % size.name)
     if args.host:
         host = "nova:%s" % args.host
     else:
@@ -133,19 +134,19 @@ def launch_instance_for_user(args, machines, size, provider, username):
     instances = launch(
         user, name, provider, machines, size, host, args.skip_deploy, args.count
     )
-    print "Launched %d instances." % len(instances)
+    print("Launched %d instances." % len(instances))
 
 
 def handle_provider_list():
-    print "ID\tName"
+    print("ID\tName")
     for p in Provider.objects.all().order_by('id'):
-        print "%d\t%s" % (p.id, p.location)
+        print("%d\t%s" % (p.id, p.location))
 
 
 def handle_provider(args):
     if not args.provider_id:
-        print "Error: provider-id is required. To get a list of providers"\
-            " use --provider-list."
+        print("Error: provider-id is required. To get a list of providers"\
+            " use --provider-list.")
         sys.exit(1)
 
 
@@ -171,12 +172,12 @@ def print_most_used(provider):
     machines = sort_most_used_machines(provider, limit=16)
     machines = machines.annotate(inst_count=Count('instance_source__instances'))
     for result in machines:
-        print "Instances Launched: %s - %s" % (result.inst_count, result)
+        print("Instances Launched: %s - %s" % (result.inst_count, result))
 
 
 def handle_machine(args, provider):
     if not args.machine_alias:
-        print "Error: A machine-alias is required."
+        print("Error: A machine-alias is required.")
         sys.exit(1)
     if args.machine_alias == 'all':
         return ProviderMachine.objects.filter(
@@ -194,7 +195,7 @@ def handle_machine(args, provider):
         ]
     else:
         machines = args.machine_alias.split(",")
-        print "Batch launch of images detected: %s" % machines
+        print("Batch launch of images detected: %s" % machines)
         return [
             ProviderMachine.objects.get(
                 instance_source__identifier=machine_alias,
@@ -205,14 +206,14 @@ def handle_machine(args, provider):
 
 def handle_size(args, provider):
     if not args.size:
-        print "Error: size name-or-id is required. To get a list of sizes"\
-            " use --size-list."
+        print("Error: size name-or-id is required. To get a list of sizes"\
+            " use --size-list.")
         sys.exit(1)
 
 
 def handle_count(args):
     if args.count < 1 or args.count > 10:
-        print "Error: Count must be between 1 and 10."
+        print("Error: Count must be between 1 and 10.")
         sys.exit(1)
 
 
@@ -246,12 +247,12 @@ def launch(
                     deploy=(not skip_deploy),
                     **kwargs
                 )
-                print "Successfully launched Machine %s : %s" \
-                    % (machine.instance_source.identifier, instance_id)
+                print("Successfully launched Machine %s : %s" \
+                    % (machine.instance_source.identifier, instance_id))
                 instances.append(instance_id)
             except Exception as exc:
-                print "Error on launch of Machine %s : %s" \
-                      % (machine.instance_source.identifier, exc)
+                print("Error on launch of Machine %s : %s" \
+                      % (machine.instance_source.identifier, exc))
     return instances
 
 

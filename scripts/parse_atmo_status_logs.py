@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import csv
 from datetime import datetime
 
@@ -16,7 +17,7 @@ def _parse_logs(filename):
                     status_name
                 ) = row
             except:
-                print 'Could not parse row:\n%s' % row
+                print('Could not parse row:\n%s' % row)
                 continue
             if status_name == 'Request Received':
                 pending_instances[(username, machine_id, size_id)] = row
@@ -31,7 +32,7 @@ def _parse_logs(filename):
                 instance_history.append(row)
                 user_instance_history[instance_id] = instance_history
                 user_history[username] = user_instance_history
-    print "Username,Instance ID, Machine ID, Size ID, Request Time, Launch Time, Networking Time, Deployment Time, Request-to-launch, launch-to-deploy"
+    print("Username,Instance ID, Machine ID, Size ID, Request Time, Launch Time, Networking Time, Deployment Time, Request-to-launch, launch-to-deploy")
     for username, instance_history in user_history.items():
         for instance_id, history in instance_history.items():
             request_time = None
@@ -56,8 +57,8 @@ def _parse_logs(filename):
                 total_deploy_time = "N/A"
             else:
                 total_deploy_time = deploy_time - launch_time
-            print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"\
-                % (username, instance_id, row[3], row[4], request_time, launch_time, network_time, deploy_time, total_launch_time, total_deploy_time)
+            print("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"\
+                % (username, instance_id, row[3], row[4], request_time, launch_time, network_time, deploy_time, total_launch_time, total_deploy_time))
 
 
 def get_time(time_str):

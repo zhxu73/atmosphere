@@ -1,6 +1,7 @@
 """
   Machine models for atmosphere.
 """
+from __future__ import print_function
 from hashlib import md5
 import ast
 
@@ -392,7 +393,7 @@ def update_application_owner(application, identity):
     application.save()
     # Update all the PMs
     all_pms = application.providermachine_set.all()
-    print "Updating %s machines.." % len(all_pms)
+    print("Updating %s machines.." % len(all_pms))
     for provider_machine in all_pms:
         accounts = get_account_driver(provider_machine.provider)
         image_id = provider_machine.instance_source.identifier
@@ -406,11 +407,11 @@ def update_application_owner(application, identity):
                 'application_owner': tenant_name
             }
         )
-        print "App data saved for %s" % image_id
+        print("App data saved for %s" % image_id)
         accounts.image_manager.share_image(image, tenant_name)
-        print "Shared access to %s with %s" % (image_id, tenant_name)
+        print("Shared access to %s with %s" % (image_id, tenant_name))
         accounts.image_manager.unshare_image(image, old_tenant_name)
-        print "Removed access to %s for %s" % (image_id, old_tenant_name)
+        print("Removed access to %s for %s" % (image_id, old_tenant_name))
 
 
 def read_cloud_machine_hook(new_machine, provider_uuid, identifier):

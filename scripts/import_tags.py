@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import json
 import logging
 from optparse import OptionParser
@@ -55,7 +56,7 @@ def import_instance_tags(instance_tags_json):
 def main():
     (options, filenames) = parser.parse_args()
     if not filenames or len(filenames) == 0:
-        print 'Missing filename'
+        print('Missing filename')
         parser.print_help()
         return 1
 

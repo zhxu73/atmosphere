@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 
 from service.driver import get_account_driver
@@ -39,22 +40,22 @@ def main():
     args = parser.parse_args()
     MATCH_ALL = args.match_all
     if args.provider_list:
-        print "ID\tName"
+        print("ID\tName")
         for p in Provider.objects.all().order_by('id'):
-            print "%d\t%s" % (p.id, p.location)
+            print("%d\t%s" % (p.id, p.location))
         return
     if not args.provider_id:
-        print "ERROR: provider-id is required. To get a list of providers use"\
-            " --provider-list"
+        print("ERROR: provider-id is required. To get a list of providers use"\
+            " --provider-list")
         return
     users = args.users.split(",") if args.users else []
-    print "Users Selected:%s" % users if users else "ALL USERS"
+    print("Users Selected:%s" % users if users else "ALL USERS")
 
     status_list = args.status_list.split(",") if args.status_list else []
-    print "Status List Selected:%s" % status_list if status_list else "ALL STATUS"
+    print("Status List Selected:%s" % status_list if status_list else "ALL STATUS")
 
     provider = Provider.objects.get(id=args.provider_id)
-    print "Provider Selected:%s" % provider
+    print("Provider Selected:%s" % provider)
     print_instances(provider, users, status_list)
 
 
@@ -78,10 +79,10 @@ def print_instances(provider, users=[], status_list=[]):
                                                    ).get_last_history()
             except:
                 last_history = "N/A (Instance not in this DB)"
-            print "Tenant:%s Instance:%s Status: (%s - %s) Created:%s Updated:%s, Last History:%s" % (
+            print("Tenant:%s Instance:%s Status: (%s - %s) Created:%s Updated:%s, Last History:%s" % (
                 username, instance.id, instance_status, tmp_status, created,
                 updated, last_history
-            )
+            ))
 
 
 if __name__ == "__main__":

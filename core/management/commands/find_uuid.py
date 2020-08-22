@@ -1,3 +1,4 @@
+from __future__ import print_function
 from django.core.management.base import BaseCommand
 import django.db.models.base
 
@@ -15,20 +16,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         needle = options.get('needle')
         if not needle:
-            print "Exception: Missing value to search for"
+            print("Exception: Missing value to search for")
             return
         field_type, result = find_string_in_models(core.models, needle)
         if not result:
-            print "Exception:Could not find value %s in any of the imports from %s (Using %s field types)" % (
+            print("Exception:Could not find value %s in any of the imports from %s (Using %s field types)" % (
                 needle, core.models, field_type
-            )
+            ))
         else:
             human_field_type = "UUID" if field_type == 'uuidfield' else 'String'
             if hasattr(result, 'get_source_class'):
                 result = result.get_source_class
-            print "%s <%s> belongs to %s %s" % (
+            print("%s <%s> belongs to %s %s" % (
                 human_field_type, needle, str(result.__class__), result
-            )
+            ))
 
 
 def find_string_in_models(import_base, needle):

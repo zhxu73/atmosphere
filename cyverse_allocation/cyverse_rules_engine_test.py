@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 from django.conf import settings
 from django.test import TestCase
 from dateutil.parser import parse
 from datetime import timedelta
 from core.models.allocation_source import total_usage
-from spoof_instance import UserWorkflow, create_allocation_source
+from .spoof_instance import UserWorkflow, create_allocation_source
 from jetstream.tasks import update_snapshot_cyverse_allocation
 
 

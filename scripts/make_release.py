@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import os
 import sys
@@ -19,7 +20,7 @@ def create_changelog(args):
     ).split("\n")
 
     if not len(commits):
-        print "Please specify a valid commit range."
+        print("Please specify a valid commit range.")
         sys.exit(1)
 
     if args.overwrite:

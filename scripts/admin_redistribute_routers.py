@@ -11,6 +11,7 @@ NOTES:This is the only script that will (re)assign router names to identities.
 
       After the routers have been re-distributed, you should be able to resume/start your instance without incident.
 """
+from __future__ import print_function
 import argparse
 import django
 django.setup()
@@ -40,11 +41,11 @@ def redistribute_routers(provider_id, users=[], redistribute=False):
         for identity in needs_router:
             identity_user = identity.created_by.username
             if users and identity_user not in users:
-                print "Skipping user %s" % identity_user
+                print("Skipping user %s" % identity_user)
                 continue
             instances = instance_map.get(identity_user, [])
             if len(instances) > 0:
-                print "Skipping user %s - Reason: User has running instances" % identity_user
+                print("Skipping user %s - Reason: User has running instances" % identity_user)
                 continue
             # Select next available router for the identity
             selected_router = provider.select_router(router_map)

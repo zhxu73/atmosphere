@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import django
 django.setup()
@@ -22,7 +23,7 @@ def main():
     )
     args = parser.parse_args()
     if args.dry_run:
-        print 'DRY RUN -- No Volumes will be end-dated'
+        print('DRY RUN -- No Volumes will be end-dated')
 
     volumes_from_invariant_13a = []
 
@@ -145,18 +146,18 @@ def main():
                 volume = volumes.get(pk=row['volume_id'])
                 volumes_from_invariant_13a.append(volume)
 
-    print 'Here are volumes from invariant 13a:'
+    print('Here are volumes from invariant 13a:')
     ctr = 1
     for vol in volumes_from_invariant_13a:
-        print ctr
+        print(ctr)
         ctr = ctr + 1
-        print vol.name.encode('utf-8')
-        print vol
+        print(vol.name.encode('utf-8'))
+        print(vol)
         if not args.dry_run:
             vol.end_date = Now()
             vol.save()
-            print 'End-dated %s' % vol
-        print '----'
+            print('End-dated %s' % vol)
+        print('----')
 
 
 # Helper function to get query results as a dictionary

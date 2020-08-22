@@ -1,6 +1,7 @@
 """
 Deploy methods for Atmosphere
 """
+from __future__ import absolute_import
 import os
 import re
 import json

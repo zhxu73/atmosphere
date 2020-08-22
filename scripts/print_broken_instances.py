@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import sys
 
@@ -19,14 +20,14 @@ def main():
         django.setup()
         from core.models import Instance
     except:
-        print "\n".join(
+        print("\n".join(
             [
                 "ERROR! This script requires a proper environment! Try:", "",
                 "   export PYTHONPATH=\"/opt/dev/atmosphere:$PYTHONPATH\"",
                 "   export DJANGO_SETTINGS_MODULE='atmosphere.settings'",
                 "   . /opt/env/atmo/bin/activate"
             ]
-        )
+        ))
         sys.exit(1)
 
     # Filter instances
@@ -46,7 +47,7 @@ def main():
                 instances.append(inst)
 
     # Print csv
-    print "UUID, PROVIDER, START_DATE, LAST_STATUS, USERNAME, EVER_HIT_ACTIVE?"
+    print("UUID, PROVIDER, START_DATE, LAST_STATUS, USERNAME, EVER_HIT_ACTIVE?")
     for inst in instances:
         uuid = inst.provider_alias
         provider = inst.provider.location
@@ -57,12 +58,12 @@ def main():
         ).count() > 0
         username = inst.created_by.username
 
-        print ",".join(
+        print(",".join(
             [
                 uuid, provider, start_date, last_status, username,
                 str(ever_hit_active)
             ]
-        )
+        ))
 
 
 if __name__ == "__main__":

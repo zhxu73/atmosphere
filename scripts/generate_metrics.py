@@ -4,6 +4,7 @@ This script is for the accounting purposes of Jetstream
 The goal:
     Print a CSV of:
 """
+from __future__ import print_function
 CSV_HEADER = (
     "Instance ID, Instance Alias, Username, Staff_user, Provider, "
     "Instance Start Date, Image Name, Version Name, Size Name, "
@@ -22,16 +23,16 @@ inst_list = Instance.objects.filter(
 )
 count = inst_list.count()
 #inst_list = Instance.objects.filter(source__providermachine__application_version__application__tags__name__icontains='featured')
-print >> sys.stderr, "%s Begin processing %s records" % (timezone.now(), count)
-print CSV_HEADER
+print("%s Begin processing %s records" % (timezone.now(), count), file=sys.stderr)
+print(CSV_HEADER)
 content = ""
 for idx, inst in enumerate(inst_list.order_by('id')):
     pct_value = round(float(idx * 100) / count, 3)
     if pct_value % 5 == 0:
-        print >> sys.stderr, "%s Percentage completed:%s" % (
+        print("%s Percentage completed:%s" % (
             timezone.now(), pct_value
-        )
-        print content
+        ), file=sys.stderr)
+        print(content)
         content = ""
     first_history = inst.get_first_history()
     try:
@@ -85,5 +86,5 @@ for idx, inst in enumerate(inst_list.order_by('id')):
     csv_line = ",".join(map(str, arg_list))
     content += "%s\n" % csv_line
 time_duration = timezone.now() - time_start
-print content
-print "\n\nContent generated in %s" % time_duration
+print(content)
+print("\n\nContent generated in %s" % time_duration)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import uuid
 
 from django.conf import settings
@@ -58,9 +59,9 @@ def listen_before_allocation_snapshot_changes(sender, instance, raw, **kwargs):
         prev_compute_used = float(prev_snapshot.compute_used)
     prev_percentage = int(100.0 * prev_compute_used / source.compute_allowed)
     current_percentage = int(100.0 * new_compute_used / source.compute_allowed)
-    print "Souce: %s (%s) Previous:%s - New:%s" % (
+    print("Souce: %s (%s) Previous:%s - New:%s" % (
         source.name, allocation_source_name, prev_percentage, current_percentage
-    )
+    ))
     percent_event_triggered = None
     # Compare 'Now snapshot' with Previous snapshot. Have we "crossed a threshold?"
     # If yes:
@@ -73,9 +74,9 @@ def listen_before_allocation_snapshot_changes(sender, instance, raw, **kwargs):
             percent_event_triggered = test_threshold
     if not percent_event_triggered:
         return
-    print "Email Event triggered for %s users: %s" % (
+    print("Email Event triggered for %s users: %s" % (
         source.all_users.count(), percent_event_triggered
-    )
+    ))
     prev_email_event = EventTable.objects \
         .filter(name="allocation_source_threshold_met") \
         .filter(entity_id=allocation_source_name,
@@ -284,10 +285,7 @@ def listen_for_instance_allocation_changes(sender, instance, created, **kwargs):
         name=allocation_source_name
     ).last()
     if not allocation_source:
-        raise (
-            "Allocation Source %s does not exist" %
-            (payload['allocation_source_name'])
-        )
+        raise "Allocation Source %s does not exist"
 
     instance_id = payload['instance_id']
     instance = Instance.objects.filter(provider_alias=instance_id).first()

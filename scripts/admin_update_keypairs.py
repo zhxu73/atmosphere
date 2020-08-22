@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from django.conf import settings
 from core.models import Provider, Identity
 from service.accounts.openstack_manager import AccountDriver as OSAccountDriver
@@ -19,7 +20,7 @@ def main():
     keyname = settings.ATMOSPHERE_KEYPAIR_NAME
     with open(settings.ATMOSPHERE_KEYPAIR_FILE, 'r') as pub_key_file:
         public_key = pub_key_file.read()
-    print "Adding keypair: %s Contents: %s" % (keyname, public_key)
+    print("Adding keypair: %s Contents: %s" % (keyname, public_key))
     os_providers = Provider.objects.filter(type__name="OpenStack")
     for prov in os_providers:
         count = 0
@@ -33,13 +34,13 @@ def main():
                     keyname, public_key
                 )
             except KeystoneUnauthorized as exc:
-                print "Could not create keypair for %s. Error message: %s"\
-                    % (creds['username'], exc.message)
+                print("Could not create keypair for %s. Error message: %s"\
+                    % (creds['username'], exc.message))
             if created:
-                print "Created keypair %s for user %s"\
-                    % (keypair, creds['username'])
+                print("Created keypair %s for user %s"\
+                    % (keypair, creds['username']))
                 count += 1
-        print 'Keypairs added for %s accounts on %s' % (count, prov)
+        print('Keypairs added for %s accounts on %s' % (count, prov))
 
 
 if __name__ == "__main__":

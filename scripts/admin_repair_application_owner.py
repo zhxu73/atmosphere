@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 
 import django
@@ -50,11 +51,11 @@ def main():
 
 
 def fix_application_owner(app, user, dry_run=False):
-    print "Application %s(%s) owned by %s" % (app.id, app.name, user)
+    print("Application %s(%s) owned by %s" % (app.id, app.name, user))
     if dry_run:
         return
     app.created_by = user
-    print "Fixed"
+    print("Fixed")
 
 
 if __name__ == "__main__":

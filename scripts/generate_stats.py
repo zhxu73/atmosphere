@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import requests
 from django.utils import timezone
 import django
@@ -7,21 +8,21 @@ django.setup()
 
 def main():
     now = timezone.now()
-    print "ONE YEAR AGO:"
-    print ""
+    print("ONE YEAR AGO:")
+    print("")
     year_ago = now - timezone.timedelta(days=365)
     get_statistics(year_ago)
-    print "THIS MONTH:"
-    print ""
+    print("THIS MONTH:")
+    print("")
     this_month = now - timezone.timedelta(days=now.day - 1)
     get_statistics(this_month)
 
 
 def get_statistics(past_time):
     now = timezone.now()
-    print "Checking statistics from %s to %s" % (
+    print("Checking statistics from %s to %s" % (
         past_time.strftime('%Y-%m-%d'), now.strftime('%Y-%m-%d')
-    )
+    ))
     resp = requests.get(
         "http://wesley.iplantc.org/api/leaderboard?from=%s&until=%s" %
         (past_time.strftime('%Y-%m-%d'), now.strftime('%Y-%m-%d'))
@@ -39,24 +40,24 @@ def print_statistics(json_data):
     stats = total_launched(json_data)
 
     # Pretty Print
-    print "Top %s users - (Launched the most instances)" % count
+    print("Top %s users - (Launched the most instances)" % count)
     for obj in by_count:
-        print '%s - %s' % (obj['username'], obj['instance_count'])
-    print '---'
+        print('%s - %s' % (obj['username'], obj['instance_count']))
+    print('---')
 
-    print "Top %s users - (Most CPU time used)" % count
+    print("Top %s users - (Most CPU time used)" % count)
     for obj in by_time:
-        print '%s - %s' % (obj['username'], print_time(obj['total_cpu_time']))
-    print '---'
+        print('%s - %s' % (obj['username'], print_time(obj['total_cpu_time'])))
+    print('---')
 
-    print "Top %s users - (Most Uptime)" % count
+    print("Top %s users - (Most Uptime)" % count)
     for obj in by_uptime:
-        print '%s - %s' % (obj['username'], print_time(obj['total_uptime']))
-    print '---'
+        print('%s - %s' % (obj['username'], print_time(obj['total_uptime'])))
+    print('---')
 
-    print "Cumulative Statistics:"
-    print "Total CPU Time: %s\nTotal running time: %s\n Total Instances launched: %s"\
-        % (print_time(stats['total_cpu_time']), print_time(stats['total_uptime']), stats['total_count'])
+    print("Cumulative Statistics:")
+    print("Total CPU Time: %s\nTotal running time: %s\n Total Instances launched: %s"\
+        % (print_time(stats['total_cpu_time']), print_time(stats['total_uptime']), stats['total_count']))
 
 
 def print_time(seconds):

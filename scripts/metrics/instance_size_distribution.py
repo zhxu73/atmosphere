@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from collections import OrderedDict
 import argparse
 
@@ -46,7 +47,7 @@ def main():
     size_distribution = instance_size_distribution(
         provider.id, args.days, date_value
     )
-    print size_distribution
+    print(size_distribution)
 
 
 def _instantiate_size_distribution(provider_id):

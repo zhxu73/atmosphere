@@ -1,3 +1,4 @@
+from __future__ import print_function
 from threepio import logger
 from atmosphere.celery_init import app as current_app
 
@@ -90,11 +91,11 @@ class CloudRouter(PredeclareRouter):
     """
 
     def route(self, options, task, args=(), kwargs={}):
-        print "ROUTE() called: %s - %s - %s" % (task, args, kwargs)
+        print("ROUTE() called: %s - %s - %s" % (task, args, kwargs))
         return
 
     def route_task(name, args, kwargs, options, task=None, **kw):
-        print "ROUTE_TASK() called: %s - %s - %s" % (task, args, kwargs)
+        print("ROUTE_TASK() called: %s - %s - %s" % (task, args, kwargs))
         return
 
     def route_for_task(self, task, *args, **kwargs):

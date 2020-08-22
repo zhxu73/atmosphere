@@ -5,6 +5,7 @@ Create access token for users
 Usage:
     python scripts/batch_create_access_token.py --token-name workshop_token --users name1,name2,name3
 """
+from __future__ import print_function
 import django
 
 django.setup()

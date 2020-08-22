@@ -4,6 +4,7 @@ This script can be used to query the Instance Reporting API without having to go
 Instead, the script will create an API Factory with DRF, render the results via DRF,
 and then offload all data into the specified file location.
 """
+from __future__ import print_function
 import argparse
 
 import django
@@ -81,9 +82,9 @@ def main():
     args = parser.parse_args()
 
     if args.provider_list:
-        print "ID\tName"
+        print("ID\tName")
         for p in Provider.objects.all().order_by('id'):
-            print "%d\t%s" % (p.id, p.location)
+            print("%d\t%s" % (p.id, p.location))
         return
 
     try:
@@ -92,9 +93,9 @@ def main():
             args.username, args.start_date, args.end_date, provider_ids,
             args.name, args.file_location
         )
-        print "Report completed: %s" % (args.file_location, )
+        print("Report completed: %s" % (args.file_location, ))
     except Exception as exc:
-        print "Failed to generate report: %s" % exc
+        print("Failed to generate report: %s" % exc)
 
 
 if __name__ == "__main__":

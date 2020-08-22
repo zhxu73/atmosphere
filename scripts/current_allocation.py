@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import sys
 
@@ -48,8 +49,8 @@ def main():
     try:
         end_date = _local_date_str_to_utc_date(args.end)
     except ValueError:
-        print >> sys.stderr, "ERROR: End date '%s'"\
-            " does not match Expected format: 'YYYY-MM-DD HH:MM:SS'"
+        print("ERROR: End date '%s'"\
+            " does not match Expected format: 'YYYY-MM-DD HH:MM:SS'", file=sys.stderr)
         return 1
     monitor_instances_for(
         openstack_prov.id, users=users, print_logs=True, end_date=end_date

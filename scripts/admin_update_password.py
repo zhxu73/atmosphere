@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import django
 django.setup()
@@ -63,12 +64,12 @@ def main():
     args = parser.parse_args()
 
     if args.provider_list:
-        print "ID\tName"
+        print("ID\tName")
         for p in Provider.objects.all().order_by('id'):
-            print "%d\t%s" % (p.id, p.location)
+            print("%d\t%s" % (p.id, p.location))
         return
     if args.dry_run:
-        print "DRY RUN -- No passwords will be updated!"
+        print("DRY RUN -- No passwords will be updated!")
 
     if args.provider:
         provider = Provider.objects.get(id=args.provider)
@@ -83,8 +84,8 @@ def main():
         identities = get_identities(provider)
     else:
         identities = get_identities(provider, args.users.split(","))
-    print "Update password on %s for %s accounts" \
-        % (provider.location, len(identities))
+    print("Update password on %s for %s accounts" \
+        % (provider.location, len(identities)))
     return update_password_for(
         provider, identities, dry_run=args.dry_run, rebuild=args.rebuild
     )
@@ -99,14 +100,14 @@ def skip_change_password(
     if old_password != password:
         # Saved password does *NOT* match old..
         if password != new_password:
-            print "Skipping user %s - Password (%s) does *NOT* match either "\
+            print("Skipping user %s - Password (%s) does *NOT* match either "\
                   "hash method (%s, %s)." \
-                  % (username, password, old_password, new_password)
+                  % (username, password, old_password, new_password))
             return True
         # ASSERT: Saved Password is 'the new one'
         if not rebuild:
-            print "Skipping user %s - Password has been updated previously. "\
-                  "If you believe this is wrong, add `--rebuild`" % (username,)
+            print("Skipping user %s - Password has been updated previously. "\
+                  "If you believe this is wrong, add `--rebuild`" % (username,))
             return True
     return False
 
@@ -127,13 +128,13 @@ def update_password_for(prov, identities, dry_run=False, rebuild=False):
             dry_run=dry_run,
             rebuild=rebuild
         ):
-            print "Skipping user %s" % (username, )
+            print("Skipping user %s" % (username, ))
             continue
         # ASSERT: Saved Password is 'old'
-        print "Changing password: %s (OLD:%s -> NEW:%s)" \
-            % (username, password, new_password),
+        print("Changing password: %s (OLD:%s -> NEW:%s)" \
+            % (username, password, new_password), end=' ')
         if dry_run:
-            print "OK"
+            print("OK")
             count += 1
             continue
         kwargs = {}
@@ -142,11 +143,11 @@ def update_password_for(prov, identities, dry_run=False, rebuild=False):
             kwargs.update({'old_password': old_password})
         success = accounts.change_password(ident, new_password, **kwargs)
         if success:
-            print "OK"
+            print("OK")
             count += 1
         else:
-            print "FAILED"
-    print 'Changed passwords for %s accounts on %s' % (count, prov)
+            print("FAILED")
+    print('Changed passwords for %s accounts on %s' % (count, prov))
 
 
 if __name__ == "__main__":

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from __future__ import absolute_import
 import argparse
 import copy
 import json
 import logging
 import sys
 
-import application_to_provider
+from . import application_to_provider
 import django
 
 django.setup()

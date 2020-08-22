@@ -2,6 +2,7 @@
 """
 Service layer for managing machines
 """
+from __future__ import print_function
 from functools import reduce
 import operator
 
@@ -219,8 +220,8 @@ def upload_privacy_data(machine_request, new_machine):
     prov = new_machine.provider
     accounts = get_account_driver(prov)
     if not accounts:
-        print "Aborting import: Could not retrieve Account Driver "\
-            "for Provider %s" % prov
+        print("Aborting import: Could not retrieve Account Driver "\
+            "for Provider %s" % prov)
         return
     img = accounts.get_image(new_machine.identifier)
     if hasattr(img, 'visibility'):    # Treated as an obj.
@@ -229,14 +230,14 @@ def upload_privacy_data(machine_request, new_machine):
         is_public = img.get('visibility', 'N/A') == 'public'
 
     if is_public:
-        print "Marking image %s private" % img.id
+        print("Marking image %s private" % img.id)
         accounts.image_manager.update_image(img, visibility='shared')
 
     accounts.clear_cache()
     admin_driver = accounts.admin_driver    # cache has been cleared
     if not admin_driver:
-        print "Aborting import: Could not retrieve admin_driver "\
-            "for Provider %s" % prov
+        print("Aborting import: Could not retrieve admin_driver "\
+            "for Provider %s" % prov)
         return
     img = accounts.get_image(new_machine.identifier)
     tenant_list = machine_request.get_access_list()
@@ -462,7 +463,7 @@ def sync_cloud_access(accounts, img, project_names=None):
 
 def make_private(image_manager, image, provider_machine, tenant_list=[]):
     if provider_machine.application.private is False:
-        print "Marking application %s private" % provider_machine.application
+        print("Marking application %s private" % provider_machine.application)
         provider_machine.application.private = True
         provider_machine.application.save()
     # Add all these people by default..
@@ -490,11 +491,11 @@ def make_private(image_manager, image, provider_machine, tenant_list=[]):
             group=group, application=provider_machine.application
         )
         if created:
-            print "Created new ApplicationMembership: %s" \
-                % (obj,)
+            print("Created new ApplicationMembership: %s" \
+                % (obj,))
         obj, created = models.ProviderMachineMembership.objects.get_or_create(
             group=group, provider_machine=provider_machine
         )
         if created:
-            print "Created new ProviderMachineMembership: %s" \
-                % (obj,)
+            print("Created new ProviderMachineMembership: %s" \
+                % (obj,))

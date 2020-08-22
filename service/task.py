@@ -2,6 +2,7 @@
 Atmosphere service tasks methods
 
 """
+from __future__ import print_function
 from threepio import logger
 
 from service.exceptions import VolumeMountConflict, InstanceDoesNotExist
@@ -21,9 +22,9 @@ def print_task_chain(start_link):
     next_link = start_link
     while next_link.options.get('link'):
         if start_link == next_link:
-            print next_link.values()[1],
+            print(next_link.values()[1], end=' ')
         next_link = next_link.options['link'][0]
-        print "--> %s" % next_link.values()[1],
+        print("--> %s" % next_link.values()[1], end=' ')
 
 
 # Instance-specific tasks

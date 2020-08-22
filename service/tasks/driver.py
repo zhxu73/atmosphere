@@ -3,6 +3,7 @@ Tasks for driver operations.
 NOTE: At this point create options do not have a hard-set requirement for 'CoreIdentity'
 Delete/remove operations do. This should be investigated further..
 """
+from __future__ import print_function
 from operator import attrgetter
 import time
 
@@ -57,7 +58,7 @@ def _update_status_log(instance, status_update):
 @task(name="print_debug")
 def print_debug():
     log_str = "print_debug task finished at %s." % datetime.now()
-    print log_str
+    print(log_str)
     celery_logger.debug(log_str)
 
 

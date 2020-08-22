@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 
 import django
@@ -37,9 +38,9 @@ def main():
             glance_image_properties = dict(glance_image.items())
         if 'kernel_id' not in glance_image_properties\
                 or 'ramdisk_id' not in glance_image_properties:
-            print "Image %s (%s) is missing kernel and/or ramdisk ..." % (
+            print("Image %s (%s) is missing kernel and/or ramdisk ..." % (
                 image_id, glance_image.name
-            ),
+            ), end=' ')
             fix_image(accounts, glance_image, mr)
 
 
@@ -52,17 +53,17 @@ def fix_image(accounts, glance_image, mr):
         old_glance_image_properties = dict(old_glance_image.items())
     if 'kernel_id' not in old_glance_image_properties\
             or 'ramdisk_id' not in old_glance_image_properties:
-        print "Parent image %s (%s) is also missing kernel/ramdisk. OK!"\
-            % (old_machine_id, old_glance_image.name)
+        print("Parent image %s (%s) is also missing kernel/ramdisk. OK!"\
+            % (old_machine_id, old_glance_image.name))
         return
     old_kernel = old_glance_image_properties['kernel_id']
     old_ramdisk = old_glance_image_properties['ramdisk_id']
-    print "Parent image %s (%s) contains kernel (%s) and ramdisk (%s). FIX POSSIBLE!"\
-        % (old_machine_id, old_glance_image.name, old_kernel, old_ramdisk)
+    print("Parent image %s (%s) contains kernel (%s) and ramdisk (%s). FIX POSSIBLE!"\
+        % (old_machine_id, old_glance_image.name, old_kernel, old_ramdisk))
     accounts.image_manager.update_image(
         glance_image, kernel_id=old_kernel, ramdisk_id=old_ramdisk
     )
-    print "Fixed"
+    print("Fixed")
 
 
 if __name__ == "__main__":

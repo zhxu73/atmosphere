@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import time
 
@@ -55,9 +56,9 @@ def main():
     # Parsed Args
     dry_run = args.dry_run
     if args.provider_list:
-        print "ID\tName"
+        print("ID\tName")
         for p in Provider.objects.all().order_by('id'):
-            print "%d\t%s" % (p.id, p.location)
+            print("%d\t%s" % (p.id, p.location))
         return
     if args.sleep:
         sleep_time = args.sleep
@@ -68,11 +69,11 @@ def main():
     else:
         users = []
     if not args.provider_id:
-        print "ERROR: provider-id is required. To get a list of providers use"\
-            " --provider-list"
+        print("ERROR: provider-id is required. To get a list of providers use"\
+            " --provider-list")
         return
     provider = Provider.objects.get(id=args.provider_id)
-    print "Provider Selected:%s" % provider
+    print("Provider Selected:%s" % provider)
 
     if not args.action:
         action = "suspend"
@@ -86,7 +87,7 @@ def _create_hostname_mapping(all_instances):
     for inst in all_instances:
         key = inst.extra['object']['OS-EXT-SRV-ATTR:hypervisor_hostname']
         if not key:
-            print "Skipping Instance %s - not on a host" % inst.id
+            print("Skipping Instance %s - not on a host" % inst.id)
             continue
         inst_list = host_map.get(key, [])
         inst_list.append(inst)
@@ -104,7 +105,7 @@ def make_user_instances(instance_list, all_tenants, users):
         tenantId = instance.owner
         tenant = [user for user in all_tenants if user.id == tenantId]
         if not tenant:
-            print "Missing tenant information on instance %s" % instance.id
+            print("Missing tenant information on instance %s" % instance.id)
             continue
         username = tenant[0].name
         if users and username not in users:
@@ -132,26 +133,26 @@ def start_instance_maintenances(
             if len(inst_list) == 0:
                 continue
             instance = inst_list.pop()
-            print "Instance %s - Hostname %s" % (instance.id, host)
+            print("Instance %s - Hostname %s" % (instance.id, host))
             status = instance.extra['status']
             if status != 'active':
-                print "Skipping instance %s in state %s" % (instance.id, status)
+                print("Skipping instance %s in state %s" % (instance.id, status))
                 continue
             finished = False
             identity = Identity.objects.get(
                 created_by__username=instance.username, provider=provider
             )
-            print 'Performing Instance Maintenance - %s - %s' % (
+            print('Performing Instance Maintenance - %s - %s' % (
                 instance.id, host
-            )
+            ))
             try:
                 _execute_action(identity, instance, action, dry_run)
             except Exception as e:
-                print "Could not %s Instance %s - Error %s" % (
+                print("Could not %s Instance %s - Error %s" % (
                     action, instance.id, e
-                )
+                ))
                 continue
-        print "Waiting %s seconds" % sleep_time
+        print("Waiting %s seconds" % sleep_time)
         if not dry_run:
             time.sleep(sleep_time)
 
@@ -164,17 +165,17 @@ def _execute_action(identity, instance, action, dry_run=False):
                 driver, instance, identity.provider.id, identity.id,
                 identity.created_by
             )
-        print "Shutoff instanceance %s" % (instance.id, )
+        print("Shutoff instanceance %s" % (instance.id, ))
     elif action == 'suspend':
-        print "Attempt to suspend instanceance %s in state %s" % (
+        print("Attempt to suspend instanceance %s in state %s" % (
             instance.id, instance._node.extra['status']
-        )
+        ))
         if not dry_run:
             suspend_instance(
                 driver, instance, identity.provider.id, identity.id,
                 identity.created_by
             )
-        print "Suspended instanceance %s" % (instance.id)
+        print("Suspended instanceance %s" % (instance.id))
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ from core.models import Application as Image
 from django.utils import six
 from django.db import models
 import operator
+from functools import reduce
 
 
 def filter_queryset(self, request, queryset, view):

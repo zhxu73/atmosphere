@@ -3,6 +3,7 @@
 # DEPRECATION WARNING -- Will be removed in favor of periodic task (To facilitate auto-generation of `atmo-user` accounts)
 # and the use of the /v2/accounts API.
 # FIXME: Add 'account_user, group_name, is_leader' args to this script
+from __future__ import print_function
 import argparse
 import libcloud.security
 
@@ -66,14 +67,14 @@ def main():
     args = parser.parse_args()
 
     if args.provider_list:
-        print "ID\tName"
+        print("ID\tName")
         for p in Provider.objects.all().order_by('id'):
-            print "%d\t%s" % (p.id, p.location)
+            print("%d\t%s" % (p.id, p.location))
         return
 
     usernames = []
     if args.provider_id and not args.provider:
-        print "WARNING: --provider-id has been *DEPRECATED*! Use --provider instead!"
+        print("WARNING: --provider-id has been *DEPRECATED*! Use --provider instead!")
         args.provider = args.provider_id
     if args.provider:
         provider = Provider.objects.get(id=args.provider)
@@ -81,25 +82,25 @@ def main():
         raise Exception(
             "Missing required argument: --provider <id>. use --provider-list to get a list of provider ID+names"
         )
-    print "Using Provider: %s" % provider
+    print("Using Provider: %s" % provider)
     try:
         acct_driver = get_account_driver(provider, raise_exception=True)
     except:
         account_provider = provider.accountprovider_set.first()
-        print "Could not create the account Driver for this Provider."\
-              " Check the configuration of this identity:%s" % account_provider
+        print("Could not create the account Driver for this Provider."\
+              " Check the configuration of this identity:%s" % account_provider)
         raise
     if args.group:
-        print "Retrieving all '%s' members in LDAP." % args.group
+        print("Retrieving all '%s' members in LDAP." % args.group)
         usernames = get_members(args.group)
     elif args.users:
         usernames = args.users.split(",")
     else:    # if not args.users
         if not args.rebuild:
-            print "Retrieving all 'atmo-user' members in LDAP."
+            print("Retrieving all 'atmo-user' members in LDAP.")
             usernames = get_members('atmo-user')
         else:
-            print "Rebuilding all existing users."
+            print("Rebuilding all existing users.")
             usernames = get_usernames(provider)
     return run_create_accounts(
         acct_driver, provider, usernames, args.rebuild, args.admin
@@ -118,14 +119,14 @@ def run_create_accounts(
         )
         if new_identities:
             count = len(new_identities)
-            print "%s new identities identity_total for %s." % (count, username)
+            print("%s new identities identity_total for %s." % (count, username))
             identity_total += count
             user_total += 1
         if admin:
             make_admin(username)
-    print "%s Total identities identity_total for %s users" % (
+    print("%s Total identities identity_total for %s users" % (
         identity_total, user_total
-    )
+    ))
 
 
 def make_admin(username):
