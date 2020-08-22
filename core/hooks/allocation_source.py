@@ -59,9 +59,12 @@ def listen_before_allocation_snapshot_changes(sender, instance, raw, **kwargs):
         prev_compute_used = float(prev_snapshot.compute_used)
     prev_percentage = int(100.0 * prev_compute_used / source.compute_allowed)
     current_percentage = int(100.0 * new_compute_used / source.compute_allowed)
-    print("Souce: %s (%s) Previous:%s - New:%s" % (
-        source.name, allocation_source_name, prev_percentage, current_percentage
-    ))
+    print(
+        "Souce: %s (%s) Previous:%s - New:%s" % (
+            source.name, allocation_source_name, prev_percentage,
+            current_percentage
+        )
+    )
     percent_event_triggered = None
     # Compare 'Now snapshot' with Previous snapshot. Have we "crossed a threshold?"
     # If yes:
@@ -74,9 +77,10 @@ def listen_before_allocation_snapshot_changes(sender, instance, raw, **kwargs):
             percent_event_triggered = test_threshold
     if not percent_event_triggered:
         return
-    print("Email Event triggered for %s users: %s" % (
-        source.all_users.count(), percent_event_triggered
-    ))
+    print(
+        "Email Event triggered for %s users: %s" %
+        (source.all_users.count(), percent_event_triggered)
+    )
     prev_email_event = EventTable.objects \
         .filter(name="allocation_source_threshold_met") \
         .filter(entity_id=allocation_source_name,

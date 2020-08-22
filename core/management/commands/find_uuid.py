@@ -20,16 +20,18 @@ class Command(BaseCommand):
             return
         field_type, result = find_string_in_models(core.models, needle)
         if not result:
-            print("Exception:Could not find value %s in any of the imports from %s (Using %s field types)" % (
-                needle, core.models, field_type
-            ))
+            print(
+                "Exception:Could not find value %s in any of the imports from %s (Using %s field types)"
+                % (needle, core.models, field_type)
+            )
         else:
             human_field_type = "UUID" if field_type == 'uuidfield' else 'String'
             if hasattr(result, 'get_source_class'):
                 result = result.get_source_class
-            print("%s <%s> belongs to %s %s" % (
-                human_field_type, needle, str(result.__class__), result
-            ))
+            print(
+                "%s <%s> belongs to %s %s" %
+                (human_field_type, needle, str(result.__class__), result)
+            )
 
 
 def find_string_in_models(import_base, needle):

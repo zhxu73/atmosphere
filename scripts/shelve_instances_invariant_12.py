@@ -125,17 +125,22 @@ def main():
                     driver, esh_instance, identity.provider.uuid, identity.uuid,
                     identity.created_by, reclaim_ip
                 )
-                print("Shelved instance %s (%s) on allocation %s for user %s" % (
-                    inst.id, inst.name, inst.allocation_source.name,
-                    inst.created_by.username
-                ))
+                print(
+                    "Shelved instance %s (%s) on allocation %s for user %s" % (
+                        inst.id, inst.name, inst.allocation_source.name,
+                        inst.created_by.username
+                    )
+                )
             if inst.last_status == 'error':
                 raise Exception('Did not shelve instance due to ERROR status')
         except Exception as e:
-            print("Could not shelve Instance %s (%s) on allocation %s for user %s - Exception: %s" % (
-                inst.id, inst.name, inst.allocation_source.name,
-                inst.created_by.username, e
-            ))
+            print(
+                "Could not shelve Instance %s (%s) on allocation %s for user %s - Exception: %s"
+                % (
+                    inst.id, inst.name, inst.allocation_source.name,
+                    inst.created_by.username, e
+                )
+            )
         continue
 
 

@@ -20,9 +20,10 @@ for instance in Instance.objects.filter(source__provider__in=provs
         if not history.end_date and history.id != last_history.id:
             print("Provider: %s" % instance.source.provider.location)
             print("Owner: %s" % instance.created_by.username)
-            print("Instance: %s Bad History: %s" % (
-                instance.provider_alias, history
-            ))
+            print(
+                "Instance: %s Bad History: %s" %
+                (instance.provider_alias, history)
+            )
             history.end_date = history.start_date
             history.save()
     prev_history = None

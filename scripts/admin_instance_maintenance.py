@@ -136,21 +136,25 @@ def start_instance_maintenances(
             print("Instance %s - Hostname %s" % (instance.id, host))
             status = instance.extra['status']
             if status != 'active':
-                print("Skipping instance %s in state %s" % (instance.id, status))
+                print(
+                    "Skipping instance %s in state %s" % (instance.id, status)
+                )
                 continue
             finished = False
             identity = Identity.objects.get(
                 created_by__username=instance.username, provider=provider
             )
-            print('Performing Instance Maintenance - %s - %s' % (
-                instance.id, host
-            ))
+            print(
+                'Performing Instance Maintenance - %s - %s' %
+                (instance.id, host)
+            )
             try:
                 _execute_action(identity, instance, action, dry_run)
             except Exception as e:
-                print("Could not %s Instance %s - Error %s" % (
-                    action, instance.id, e
-                ))
+                print(
+                    "Could not %s Instance %s - Error %s" %
+                    (action, instance.id, e)
+                )
                 continue
         print("Waiting %s seconds" % sleep_time)
         if not dry_run:
@@ -167,9 +171,10 @@ def _execute_action(identity, instance, action, dry_run=False):
             )
         print("Shutoff instanceance %s" % (instance.id, ))
     elif action == 'suspend':
-        print("Attempt to suspend instanceance %s in state %s" % (
-            instance.id, instance._node.extra['status']
-        ))
+        print(
+            "Attempt to suspend instanceance %s in state %s" %
+            (instance.id, instance._node.extra['status'])
+        )
         if not dry_run:
             suspend_instance(
                 driver, instance, identity.provider.id, identity.id,

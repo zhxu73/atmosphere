@@ -23,15 +23,18 @@ inst_list = Instance.objects.filter(
 )
 count = inst_list.count()
 #inst_list = Instance.objects.filter(source__providermachine__application_version__application__tags__name__icontains='featured')
-print("%s Begin processing %s records" % (timezone.now(), count), file=sys.stderr)
+print(
+    "%s Begin processing %s records" % (timezone.now(), count), file=sys.stderr
+)
 print(CSV_HEADER)
 content = ""
 for idx, inst in enumerate(inst_list.order_by('id')):
     pct_value = round(float(idx * 100) / count, 3)
     if pct_value % 5 == 0:
-        print("%s Percentage completed:%s" % (
-            timezone.now(), pct_value
-        ), file=sys.stderr)
+        print(
+            "%s Percentage completed:%s" % (timezone.now(), pct_value),
+            file=sys.stderr
+        )
         print(content)
         content = ""
     first_history = inst.get_first_history()

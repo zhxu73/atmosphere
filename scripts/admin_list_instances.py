@@ -52,7 +52,9 @@ def main():
     print("Users Selected:%s" % users if users else "ALL USERS")
 
     status_list = args.status_list.split(",") if args.status_list else []
-    print("Status List Selected:%s" % status_list if status_list else "ALL STATUS")
+    print(
+        "Status List Selected:%s" % status_list if status_list else "ALL STATUS"
+    )
 
     provider = Provider.objects.get(id=args.provider_id)
     print("Provider Selected:%s" % provider)
@@ -79,10 +81,13 @@ def print_instances(provider, users=[], status_list=[]):
                                                    ).get_last_history()
             except:
                 last_history = "N/A (Instance not in this DB)"
-            print("Tenant:%s Instance:%s Status: (%s - %s) Created:%s Updated:%s, Last History:%s" % (
-                username, instance.id, instance_status, tmp_status, created,
-                updated, last_history
-            ))
+            print(
+                "Tenant:%s Instance:%s Status: (%s - %s) Created:%s Updated:%s, Last History:%s"
+                % (
+                    username, instance.id, instance_status, tmp_status, created,
+                    updated, last_history
+                )
+            )
 
 
 if __name__ == "__main__":

@@ -20,9 +20,10 @@ def main():
 
 def get_statistics(past_time):
     now = timezone.now()
-    print("Checking statistics from %s to %s" % (
-        past_time.strftime('%Y-%m-%d'), now.strftime('%Y-%m-%d')
-    ))
+    print(
+        "Checking statistics from %s to %s" %
+        (past_time.strftime('%Y-%m-%d'), now.strftime('%Y-%m-%d'))
+    )
     resp = requests.get(
         "http://wesley.iplantc.org/api/leaderboard?from=%s&until=%s" %
         (past_time.strftime('%Y-%m-%d'), now.strftime('%Y-%m-%d'))

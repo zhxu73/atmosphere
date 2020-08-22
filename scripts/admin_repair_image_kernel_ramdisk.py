@@ -38,9 +38,11 @@ def main():
             glance_image_properties = dict(glance_image.items())
         if 'kernel_id' not in glance_image_properties\
                 or 'ramdisk_id' not in glance_image_properties:
-            print("Image %s (%s) is missing kernel and/or ramdisk ..." % (
-                image_id, glance_image.name
-            ), end=' ')
+            print(
+                "Image %s (%s) is missing kernel and/or ramdisk ..." %
+                (image_id, glance_image.name),
+                end=' '
+            )
             fix_image(accounts, glance_image, mr)
 
 

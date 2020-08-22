@@ -74,7 +74,9 @@ def main():
 
     usernames = []
     if args.provider_id and not args.provider:
-        print("WARNING: --provider-id has been *DEPRECATED*! Use --provider instead!")
+        print(
+            "WARNING: --provider-id has been *DEPRECATED*! Use --provider instead!"
+        )
         args.provider = args.provider_id
     if args.provider:
         provider = Provider.objects.get(id=args.provider)
@@ -119,14 +121,17 @@ def run_create_accounts(
         )
         if new_identities:
             count = len(new_identities)
-            print("%s new identities identity_total for %s." % (count, username))
+            print(
+                "%s new identities identity_total for %s." % (count, username)
+            )
             identity_total += count
             user_total += 1
         if admin:
             make_admin(username)
-    print("%s Total identities identity_total for %s users" % (
-        identity_total, user_total
-    ))
+    print(
+        "%s Total identities identity_total for %s users" %
+        (identity_total, user_total)
+    )
 
 
 def make_admin(username):

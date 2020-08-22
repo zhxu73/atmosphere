@@ -238,8 +238,12 @@ def get_provider_info(provider_info={}):
             "What is the name of your new provider? : "
         )
     if not provider_info.get('public'):
-        print("Images on Public providers are advertised on Troposphere UI without authentication.")
-        print("Generally, users will have an identity created on each public provider.")
+        print(
+            "Images on Public providers are advertised on Troposphere UI without authentication."
+        )
+        print(
+            "Generally, users will have an identity created on each public provider."
+        )
         provider_info['public'] = require_input(
             "Would you like Atmosphere to make this provider public?"
             " (yes/[no]): ",
@@ -310,7 +314,9 @@ def get_cloud_config(provider_credentials={}, cloud_config={}):
 def set_deploy_config(deploy_config):
     hostname_format = deploy_config.get('hostname_format')
     if not hostname_format:
-        print("What is the hostname format for the instances deployed by your provider? (Default selection will use IP address as hostname)")
+        print(
+            "What is the hostname format for the instances deployed by your provider? (Default selection will use IP address as hostname)"
+        )
         hostname_format = require_input(
             "hostname_format for the provider (Default: <Use IP Address>): ",
             default='%(one)s.%(two)s.%(three)s.%(four)s'
@@ -322,21 +328,27 @@ def set_deploy_config(deploy_config):
 def set_network_config(provider_credentials, net_config):
     #FIXME/TODO: This is probably not an effective way of collecting data..
     if not net_config.get('default_security_rules'):
-        print("What is the list of security rules for the provider? (Default: Uses the setting `DEFAULT_RULES`)")
+        print(
+            "What is the list of security rules for the provider? (Default: Uses the setting `DEFAULT_RULES`)"
+        )
         net_config['default_security_rules'] = require_input(
             "default_security_rules for provider: (Should be a list)",
             default=settings.DEFAULT_RULES
         )
 
     if not net_config.get('dns_nameservers'):
-        print("What is the list of DNS Nameservers for the provider? (Default: Uses google DNS servers [8.8.8.8, 8.8.4.4])")
+        print(
+            "What is the list of DNS Nameservers for the provider? (Default: Uses google DNS servers [8.8.8.8, 8.8.4.4])"
+        )
         net_config['dns_nameservers'] = require_input(
             "dns_nameservers for provider: (Should be a list)",
             default=settings.DEFAULT_NAMESERVERS
         )
 
     if not net_config.get('topology'):
-        print("Which Network Topology should be used for your provider? (Default: External Network)")
+        print(
+            "Which Network Topology should be used for your provider? (Default: External Network)"
+        )
         choices = topology_list()
         for idx, choice in enumerate(choices):
             print("%s:" % idx, end=' ')
@@ -364,7 +376,9 @@ def set_network_config(provider_credentials, net_config):
         )
 
     elif 'network_name' not in provider_credentials and topology_name == 'External Network Topology':
-        print("External/public network that Atmosphere instances will connect to in order to communicate. (Default: public)")
+        print(
+            "External/public network that Atmosphere instances will connect to in order to communicate. (Default: public)"
+        )
         provider_credentials['network_name'] = require_input(
             "External network name: ", default='public'
         )
@@ -376,14 +390,18 @@ def set_network_config(provider_credentials, net_config):
 def set_user_config(user_config):
     admin_role_name = user_config.get('admin_role_name')
     if not admin_role_name:
-        print("What is the role name for 'admin' in your provider? (Default: admin)")
+        print(
+            "What is the role name for 'admin' in your provider? (Default: admin)"
+        )
         admin_role_name = require_input(
             "admin role_name for the provider: ", default='admin'
         )
 
     user_role_name = user_config.get('user_role_name')
     if not user_role_name:
-        print("What is the role name for default membership in your provider? (Default: _member_)")
+        print(
+            "What is the role name for default membership in your provider? (Default: _member_)"
+        )
         user_role_name = require_input(
             "user_role_name for the provider: ", default='_member_'
         )
@@ -434,7 +452,9 @@ def get_provider_credentials(credential_info={}):
         )
 
     if not credential_info.get('ex_force_auth_version'):
-        print("What is the Authentication Scheme (Openstack ONLY -- Default:'2.0_password')?")
+        print(
+            "What is the Authentication Scheme (Openstack ONLY -- Default:'2.0_password')?"
+        )
         ex_force_auth_version = require_input(
             "ex_force_auth_version for the provider: ",
             lambda answer: answer in ['2.0_password', '3.x_password'],
@@ -446,12 +466,16 @@ def get_provider_credentials(credential_info={}):
 
     admin_url = credential_info['admin_url']
     if '2' in auth_version and '/v2.0/tokens' not in admin_url:
-        print("Note: Adding '/v2.0/tokens' to the end of the admin_url path (Required for 2.0_password)")
+        print(
+            "Note: Adding '/v2.0/tokens' to the end of the admin_url path (Required for 2.0_password)"
+        )
         credential_info['admin_url'] = urljoin(admin_url, '/v2.0/tokens')
 
     auth_url = credential_info['auth_url']
     if '2' in auth_version and '/v2.0/tokens' not in auth_url:
-        print("Note: Adding '/v2.0/tokens' to the end of the auth_url path (Required for 2.0_password)")
+        print(
+            "Note: Adding '/v2.0/tokens' to the end of the auth_url path (Required for 2.0_password)"
+        )
         credential_info['auth_url'] = urljoin(auth_url, '/v2.0/tokens')
 
     return credential_info
@@ -560,7 +584,9 @@ def _create_provider_and_identity(arguments):
         (provider_info, admin_info,
          provider_credentials) = read_openrc_file(arguments.openrc)
     if not arguments.json:
-        print("Warning: no JSON file was presented. Please use or copy extras/json_data/new_provider_cloud_config.json")
+        print(
+            "Warning: no JSON file was presented. Please use or copy extras/json_data/new_provider_cloud_config.json"
+        )
         return
     (
         json_provider_info, json_admin_info, json_provider_credentials,
@@ -633,7 +659,10 @@ def main():
 
     arguments = parser.parse_args()
     new_identity = _create_provider_and_identity(arguments)
-    print("Your new Provider and First Identity have been created: %s" % new_identity)
+    print(
+        "Your new Provider and First Identity have been created: %s" %
+        new_identity
+    )
 
 
 if __name__ == "__main__":

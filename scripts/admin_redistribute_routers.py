@@ -45,7 +45,10 @@ def redistribute_routers(provider_id, users=[], redistribute=False):
                 continue
             instances = instance_map.get(identity_user, [])
             if len(instances) > 0:
-                print("Skipping user %s - Reason: User has running instances" % identity_user)
+                print(
+                    "Skipping user %s - Reason: User has running instances" %
+                    identity_user
+                )
                 continue
             # Select next available router for the identity
             selected_router = provider.select_router(router_map)

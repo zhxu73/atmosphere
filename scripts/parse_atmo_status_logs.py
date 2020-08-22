@@ -32,7 +32,9 @@ def _parse_logs(filename):
                 instance_history.append(row)
                 user_instance_history[instance_id] = instance_history
                 user_history[username] = user_instance_history
-    print("Username,Instance ID, Machine ID, Size ID, Request Time, Launch Time, Networking Time, Deployment Time, Request-to-launch, launch-to-deploy")
+    print(
+        "Username,Instance ID, Machine ID, Size ID, Request Time, Launch Time, Networking Time, Deployment Time, Request-to-launch, launch-to-deploy"
+    )
     for username, instance_history in user_history.items():
         for instance_id, history in instance_history.items():
             request_time = None

@@ -18,14 +18,17 @@ def main():
         from core.models import Instance
         from django.db.models import Q
     except:
-        print("\n".join(
-            [
-                "ERROR! This script requires a proper environment! Try:", "",
-                "   export PYTHONPATH=\"/opt/dev/atmosphere:$PYTHONPATH\"",
-                "   export DJANGO_SETTINGS_MODULE='atmosphere.settings'",
-                "   . /opt/env/atmo/bin/activate"
-            ]
-        ))
+        print(
+            "\n".join(
+                [
+                    "ERROR! This script requires a proper environment! Try:",
+                    "",
+                    "   export PYTHONPATH=\"/opt/dev/atmosphere:$PYTHONPATH\"",
+                    "   export DJANGO_SETTINGS_MODULE='atmosphere.settings'",
+                    "   . /opt/env/atmo/bin/activate"
+                ]
+            )
+        )
         sys.exit(1)
 
     uuid = args.uuid

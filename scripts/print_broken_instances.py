@@ -20,14 +20,17 @@ def main():
         django.setup()
         from core.models import Instance
     except:
-        print("\n".join(
-            [
-                "ERROR! This script requires a proper environment! Try:", "",
-                "   export PYTHONPATH=\"/opt/dev/atmosphere:$PYTHONPATH\"",
-                "   export DJANGO_SETTINGS_MODULE='atmosphere.settings'",
-                "   . /opt/env/atmo/bin/activate"
-            ]
-        ))
+        print(
+            "\n".join(
+                [
+                    "ERROR! This script requires a proper environment! Try:",
+                    "",
+                    "   export PYTHONPATH=\"/opt/dev/atmosphere:$PYTHONPATH\"",
+                    "   export DJANGO_SETTINGS_MODULE='atmosphere.settings'",
+                    "   . /opt/env/atmo/bin/activate"
+                ]
+            )
+        )
         sys.exit(1)
 
     # Filter instances
@@ -58,12 +61,14 @@ def main():
         ).count() > 0
         username = inst.created_by.username
 
-        print(",".join(
-            [
-                uuid, provider, start_date, last_status, username,
-                str(ever_hit_active)
-            ]
-        ))
+        print(
+            ",".join(
+                [
+                    uuid, provider, start_date, last_status, username,
+                    str(ever_hit_active)
+                ]
+            )
+        )
 
 
 if __name__ == "__main__":
