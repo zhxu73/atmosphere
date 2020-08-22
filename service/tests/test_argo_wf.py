@@ -13,7 +13,6 @@ from service.tests.argo_json import hello_world_wf_def, hello_world_wf_success
 
 
 class TestArgoWorkflowCreation(unittest.TestCase):
-
     @responses.activate
     def test_wf_creation(self):
         responses.add(
@@ -56,10 +55,10 @@ class TestArgoWorkflowCreation(unittest.TestCase):
             ssl_verify=True
         )
         with self.assertRaises(requests.exceptions.HTTPError):
-            wf = ArgoWorkflow.create(cxt, hello_world_wf_def)
+            ArgoWorkflow.create(cxt, hello_world_wf_def)
+
 
 class TestArgoWorkflowStatus(unittest.TestCase):
-
     @responses.activate
     def test_wf_status_running(self):
         status = self._wf_status("Running")
@@ -96,11 +95,16 @@ class TestArgoWorkflowStatus(unittest.TestCase):
     def test_wf_status_http_error(self):
         responses.add(
             **{
-                'method': responses.GET,
-                'url': 'https://localhost:443/api/v1/workflows/ns/hello-world-12345a',
-                'body': '',
-                'status': 400,
-                'content_type': 'application/json'
+                'method':
+                    responses.GET,
+                'url':
+                    'https://localhost:443/api/v1/workflows/ns/hello-world-12345a',
+                'body':
+                    '',
+                'status':
+                    400,
+                'content_type':
+                    'application/json'
             }
         )
 
@@ -113,7 +117,7 @@ class TestArgoWorkflowStatus(unittest.TestCase):
         )
         wf = ArgoWorkflow("hello-world-12345a")
         with self.assertRaises(requests.exceptions.HTTPError):
-            status = wf.status(cxt)
+            wf.status(cxt)
 
     def _wf_status(self, wf_status):
         """
@@ -127,11 +131,16 @@ class TestArgoWorkflowStatus(unittest.TestCase):
         """
         responses.add(
             **{
-                'method': responses.GET,
-                'url': 'https://localhost:443/api/v1/workflows/ns/hello-world-12345a',
-                'body': '{"status": {"phase": "%s" } }' % wf_status,
-                'status': 200,
-                'content_type': 'application/json'
+                'method':
+                    responses.GET,
+                'url':
+                    'https://localhost:443/api/v1/workflows/ns/hello-world-12345a',
+                'body':
+                    '{"status": {"phase": "%s" } }' % wf_status,
+                'status':
+                    200,
+                'content_type':
+                    'application/json'
             }
         )
 
@@ -151,11 +160,16 @@ class TestArgoWorkflow(unittest.TestCase):
     def test_wf_get_nodes(self):
         responses.add(
             **{
-                'method': responses.GET,
-                'url': 'https://localhost:443/api/v1/workflows/ns/hello-world-a1234',
-                'body': json.dumps(hello_world_wf_success),
-                'status': 200,
-                'content_type': 'application/json'
+                'method':
+                    responses.GET,
+                'url':
+                    'https://localhost:443/api/v1/workflows/ns/hello-world-a1234',
+                'body':
+                    json.dumps(hello_world_wf_success),
+                'status':
+                    200,
+                'content_type':
+                    'application/json'
             }
         )
 
@@ -170,4 +184,3 @@ class TestArgoWorkflow(unittest.TestCase):
         nodes = wf.get_nodes(cxt)
         self.assertIn("hello-world-a1234", nodes)
         self.assertEqual(len(nodes), 1)
-
