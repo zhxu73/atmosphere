@@ -34,7 +34,7 @@ def argo_deploy_instance(
     """
     try:
         wf_data = _get_workflow_data(
-            provider_uuid, server_ip, username, timezone
+            provider_uuid, instance_uuid, server_ip, username, timezone
         )
 
         wf, status = argo_workflow_exec(
@@ -62,38 +62,62 @@ def argo_deploy_instance(
         raise exc
 
 
-def _get_workflow_data(provider_uuid, server_ip, username, timezone):
+def _get_workflow_data(
+    provider_uuid, instance_uuid, server_ip, username, timezone
+):
     """
     Generate the data structure to be passed to the workflow
 
     Args:
+        provider_uuid (str): uuid of the provider
+        instance_uuid (str): uuid of the instance
         server_ip (str): ip of the server instance
         username (str): username of the owner of the instance
         timezone (str): timezone of the provider
 
+    Raises:
+        ArgoConfigFileError: when fields are missing from argo config
+
     Returns:
-        dict: {"arguments": {"parameters": [{"name": "", "value": ""}]}}
+        dict: {"spec": {"arguments": {"parameters": [{"name": "", "value": ""}]}}, "metadata": {"labels": {}, "annotations": {}}}
     """
-    wf_data = {"arguments": {"parameters": []}}
-    wf_data["arguments"]["parameters"].append(
+
+    wf_data = {"spec": {}, "metadata": {}}
+    wf_data["spec"] = {"arguments": {"parameters": []}}
+    wf_data["metadata"] = {"labels": {}, "annotations": {}}
+
+    # labels & annotations
+    wf_data["metadata"]["labels"]["workflow_type"] = "instance_deploy"
+    wf_data["metadata"]["labels"]["provider"] = provider_uuid
+    wf_data["metadata"]["annotations"]["instance_uuid"] = instance_uuid
+
+    # parameters
+    wf_data["spec"]["arguments"]["parameters"].append(
         {
             "name": "server-ip",
             "value": server_ip
         }
     )
-    wf_data["arguments"]["parameters"].append(
+    wf_data["spec"]["arguments"]["parameters"].append(
         {
             "name": "user",
             "value": username
         }
     )
-    wf_data["arguments"]["parameters"].append({"name": "tz", "value": timezone})
+    wf_data["spec"]["arguments"]["parameters"].append(
+        {
+            "name": "tz",
+            "value": timezone
+        }
+    )
 
     # read zoneinfo from argo config
     config = read_argo_config(
         settings.ARGO_CONFIG_FILE_PATH, provider_uuid=provider_uuid
     )
-    wf_data["arguments"]["parameters"].append(
+    if "zoneinfo" not in config:
+        raise ArgoConfigFileError("zoneinfo missing from Argo config")
+    wf_data["spec"]["arguments"]["parameters"].append(
         {
             "name": "zoneinfo",
             "value": config["zoneinfo"]
@@ -103,7 +127,7 @@ def _get_workflow_data(provider_uuid, server_ip, username, timezone):
     # callback token
     if "callback_token" not in config:
         raise ArgoConfigFileError("callback token missing from Argo config")
-    wf_data["arguments"]["parameters"].append(
+    wf_data["spec"]["arguments"]["parameters"].append(
         {
             "name": "callback_token",
             "value": config["callback_token"]

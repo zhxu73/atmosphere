@@ -298,7 +298,12 @@ class ArgoWorkflowStatus:
 
 def _populate_wf_data(wf_def, wf_data):
     """
-    Populate the workflow data in the workflow definition
+    Populate the workflow data in the workflow definition.
+    Following data are extracted from wf_data (if any) and then injected into the workflow definition.
+    - workflow.spec.parameters (wf_data["spec"]["arguments"]["parameters"])
+    - workflow.spec.artifacts (wf_data["spec"]["arguments"]["artifacts"])
+    - workflow.annotations (wf_data["metadata"]["annotations"])
+    - workflow.labels (wf_data["metadata"]["labels"])
 
     Args:
         wf_def (dict): workflow definition
@@ -307,16 +312,46 @@ def _populate_wf_data(wf_def, wf_data):
     Returns:
         dict: workflow definition with the workflow data populated
     """
-    if not wf_data["arguments"]:
+    if "metadata" in wf_data:
+        _populate_wf_metadata(wf_def, wf_data["metadata"])
+
+    if "spec" not in wf_data:
         return wf_def
-    if not wf_def["spec"]["arguments"]:
+    if "arguments" in wf_data["spec"]:
+        _populate_wf_arguments(wf_def, wf_data["spec"]["arguments"])
+
+    return wf_def
+
+
+def _populate_wf_metadata(wf_def, metadata):
+    # prepare wf_def
+    if "metadata" not in wf_def:
+        wf_def["metadata"] = {}
+    if not isinstance(wf_def["metadata"], dict):
+        wf_def["metadata"] = {}
+
+    # populate annotations & labels
+    if "annotations" in metadata:
+        wf_def["metadata"]["annotations"] = metadata["annotations"]
+    if "labels" in metadata:
+        wf_def["metadata"]["labels"] = metadata["labels"]
+    return wf_def
+
+
+def _populate_wf_arguments(wf_def, argument):
+    # prepare wf_def
+    if "spec" not in wf_def:
+        wf_def["spec"] = {}
+    if not isinstance(wf_def["spec"], dict):
+        wf_def["spec"] = {}
+    if "arguments" not in wf_def["spec"]:
+        wf_def["spec"]["arguments"] = {}
+    if not isinstance(wf_def["spec"]["arguments"], dict):
         wf_def["spec"]["arguments"] = {}
 
-    if "parameters" in wf_data["arguments"]:
-        wf_def["spec"]["arguments"]["parameters"] = wf_data["arguments"][
-            "parameters"]
-    if "artifacts" in wf_data["arguments"]:
-        wf_def["spec"]["arguments"]["artifacts"] = wf_data["arguments"][
-            "artifacts"]
-
+    # populate arguments
+    if "parameters" in argument:
+        wf_def["spec"]["arguments"]["parameters"] = argument["parameters"]
+    if "artifacts" in argument:
+        wf_def["spec"]["arguments"]["artifacts"] = argument["artifacts"]
     return wf_def
