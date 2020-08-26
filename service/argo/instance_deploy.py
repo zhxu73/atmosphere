@@ -10,7 +10,7 @@ import atmosphere
 
 from service.argo.wf_call import argo_workflow_exec
 from service.argo.common import argo_context_from_config, read_argo_config
-from service.argo.exception import WorkflowFailed, WorkflowErrored
+from service.argo.exception import WorkflowFailed, WorkflowErrored, ArgoConfigFileError
 
 
 def argo_deploy_instance(
@@ -97,6 +97,16 @@ def _get_workflow_data(provider_uuid, server_ip, username, timezone):
         {
             "name": "zoneinfo",
             "value": config["zoneinfo"]
+        }
+    )
+
+    # callback token
+    if "callback_token" not in config:
+        raise ArgoConfigFileError("callback token missing from Argo config")
+    wf_data["arguments"]["parameters"].append(
+        {
+            "name": "callback_token",
+            "value": config["callback_token"]
         }
     )
 
