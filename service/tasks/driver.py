@@ -245,8 +245,8 @@ def current_openstack_identities():
         provider__type__name__iexact='openstack', provider__active=True
     )
     key_sorter = lambda ident: attrgetter(
-        ident.provider.type.name,
-        ident.created_by.username)
+        ident.provider.type.name, ident.created_by.username
+    )
     identities = sorted(identities, key=key_sorter)
     return identities
 
@@ -820,6 +820,20 @@ def get_chain_from_active_with_ip(
     Use Case: Instance has (or will be at start of this chain) an IP && is active.
     Goal: if 'Deploy' - Update metadata to inform you will be deploying
           else        - Remove metadata and end.
+
+    Args:
+        driverCls (rtwo.driver.EshDriver): driver type/class
+        provider (rtwo.models.provider.Provider): the provider that the instance is provisioned on
+        identity (rtwo.models.identity.Identity): user's identity on the provider
+        instance (rtwo.models.instance.Instance): the instance to deploy on
+        core_identity (core.models.Identity): identity of the user
+        username (str, optional): username of the owner of the instance. Defaults to None.
+        password (str, optional): DEPRECATED, not used. Defaults to None.
+        redeploy (bool, optional): whether this is a re-deploy or not. Defaults to False.
+        deploy (bool, optional): whether to deploy or not; if skipping deployment, status will be updated to active. Defaults to True.
+
+    Returns:
+        celery.canvas.Signature: deploy task chain for instance with an IP
     """
     if redeploy:
         celery_logger.warn(
@@ -856,6 +870,45 @@ def get_chain_from_active_with_ip(
     deploy_task = _deploy_instance.si(
         driverCls, provider, identity, instance.id, username, None, redeploy
     )
+
+    deploy_ready_task.link(deploy_meta_task)
+    deploy_ready_task.link_error(
+        deploy_failed.s(driverCls, provider, identity, instance.id)
+    )
+    deploy_meta_task.link(deploy_task)
+    deploy_task.link_error(
+        deploy_failed.s(driverCls, provider, identity, instance.id)
+    )
+
+    celery_logger.info("Deploy Chain : %s" % print_chain(start_chain, idx=0))
+    return start_chain
+
+
+def get_deploy_chain_second_half(
+    driverCls,
+    provider,
+    identity,
+    instance,
+    core_identity,
+    username=None,
+    redeploy=False
+):
+    """
+    2nd half of the deploy chain with active ip after get_chain_from_active_with_ip() (which stops at _deploy_instance()).
+    this should be called when the callback of the instance_deploy workflow occurs.
+
+    Args:
+        driverCls (rtwo.driver.EshDriver): driver type/class
+        provider (rtwo.models.provider.Provider): the provider that the instance is provisioned on
+        identity (rtwo.models.identity.Identity): user's identity on the provider
+        instance (rtwo.models.instance.Instance): the instance to deploy on
+        core_identity (core.models.Identity): identity of the user
+        username (str, optional): username of the owner of the instance. Defaults to None.
+        redeploy (bool, optional): whether this is a re-deploy or not. Defaults to False.
+
+    Returns:
+        celery.canvas.Signature: 2nd half of the deploy task chain
+    """
     deploy_user_task = _deploy_instance_for_user.si(
         driverCls, provider, identity, instance.id, username, redeploy
     )
@@ -865,6 +918,7 @@ def get_chain_from_active_with_ip(
     check_web_desktop = check_web_desktop_task.si(
         driverCls, provider, identity, instance.id
     )
+    start_chain = check_web_desktop    # 2nd half start with check_web_desktop
     remove_status_chain = get_remove_status_chain(
         driverCls, provider, identity, instance
     )
@@ -878,20 +932,10 @@ def get_chain_from_active_with_ip(
         driverCls, provider, identity, instance.id
     )
 
-    # (SUCCESS_)LINKS and ERROR_LINKS
-    deploy_task.link_error(
-        deploy_failed.s(driverCls, provider, identity, instance.id)
-    )
     deploy_user_task.link_error(user_deploy_failed_task)
     # Note created new 'copy' of remove_status to avoid potential for email*2
     user_deploy_failed_task.link(remove_status_on_failure_task)
 
-    deploy_ready_task.link(deploy_meta_task)
-    deploy_ready_task.link_error(
-        deploy_failed.s(driverCls, provider, identity, instance.id)
-    )
-    deploy_meta_task.link(deploy_task)
-    deploy_task.link(check_web_desktop)
     check_web_desktop.link(
         check_vnc_task
     )    # Above this line, atmo is responsible for success.
@@ -910,7 +954,9 @@ def get_chain_from_active_with_ip(
     # Only send emails when 'redeploy=False'
     if not redeploy:
         remove_status_chain.link(email_task)
-    celery_logger.info("Deploy Chain : %s" % print_chain(start_chain, idx=0))
+    celery_logger.info(
+        "Deploy Chain 2nd half: %s" % print_chain(start_chain, idx=0)
+    )
     return start_chain
 
 

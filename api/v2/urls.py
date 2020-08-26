@@ -166,4 +166,9 @@ urlpatterns = [
         name='web_token'
     ),
     url(r'^admin/', include(v2_admin_urls, namespace="admin")),
+    url(
+        r'^workflow_callback',
+        views.WorkflowCallbackView.as_view(),
+        name="workflow_callback"
+    ),
 ]

@@ -56,3 +56,4 @@ from .metric import MetricViewSet
 from .ssh_key import SSHKeyViewSet
 # This is imported out of abc order because it caused import errors if imported above
 from .access_token import AccessTokenViewSet
+from .workflow_callback import WorkflowCallbackView
