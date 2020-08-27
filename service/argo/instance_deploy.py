@@ -124,6 +124,16 @@ def _get_workflow_data(
         }
     )
 
+    # callback url
+    if "callback_url" not in config:
+        raise ArgoConfigFileError("callback url missing from Argo config")
+    wf_data["spec"]["arguments"]["parameters"].append(
+        {
+            "name": "callback_url",
+            "value": config["callback_url"]
+        }
+    )
+
     # callback token
     if "callback_token" not in config:
         raise ArgoConfigFileError("callback token missing from Argo config")
