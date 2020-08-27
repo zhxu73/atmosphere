@@ -1217,7 +1217,8 @@ def _deploy_instance(
         # Argo workflow instead of service.deploy.instance_deploy()
         # TODO: use provider.location until there is short name for provider
         argo_deploy_instance(
-            provider.uuid, instance_id, instance.ip, username, provider.timezone
+            str(provider.uuid), instance_id, instance.ip, username,
+            provider.timezone
         )
         _update_status_log(
             instance, "ARGO, Ansible Finished for %s." % instance.ip
