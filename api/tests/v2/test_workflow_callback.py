@@ -21,6 +21,17 @@ class WorkflowCallbackTests(APITestCase):
         self.view = WorkflowCallbackView()
         self.factory = APIRequestFactory()
 
+        # setup a mock argo config
+        from django.conf import settings
+        import api
+        import os
+        atmo_root_path = os.path.abspath(
+            os.path.join(os.path.dirname(api.__file__), "..")
+        )
+        settings.ARGO_CONFIG_FILE_PATH = os.path.join(
+            atmo_root_path, "travis/argo_config_example.yml"
+        )
+
     def test_workflow_callback_missing_wf_name(self):
         """
         Test endpoint with request that is missing workflow name in data

@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from api.v2.exceptions import failure_response
 from threepio import logger
 from service.callback import all_handlers
+from service.argo.common import read_argo_config
 
 
 class WorkflowCallbackView(APIView):
@@ -48,6 +49,8 @@ class WorkflowCallbackView(APIView):
             return Response(
                 data={"message": "workflow callback received"}, status=200
             )
+        except ValueError as exc:
+            return failure_response(status.HTTP_400_BAD_REQUEST, str(exc))
         except Exception as exc:
             logger.exception(exc)
             return failure_response(
@@ -109,8 +112,11 @@ def _verify_callback_token(workflow_name, callback_token):
         workflow_name (str): name of the workflow
         callback_token (str): callback token
     """
-    # raise ValueError("bad callback token")
-    pass
+    config = read_argo_config()
+    if "callback_token" not in config:
+        raise Exception("callback token not found in config")
+    if config["callback_token"] != callback_token:
+        raise ValueError("bad callback token")
 
 
 def _get_client_ip(request):
