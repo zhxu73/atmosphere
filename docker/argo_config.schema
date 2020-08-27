@@ -24,9 +24,11 @@
                 "namespace": {"type": "string"},
                 "workflow_base_dir": {"type": "string"},
                 "zoneinfo": {"type": "string"},
-                "ssl_verify": {"type": "boolean"}
+                "ssl_verify": {"type": "boolean"},
+                "callback_url": {"type": "string"},
+                "callback_token": {"type": "string"}
             },
-            "required": ["api_host", "api_port", "token", "namespace", "workflow_base_dir", "zoneinfo", "ssl_verify"]
+            "required": ["api_host", "api_port", "token", "namespace", "workflow_base_dir", "zoneinfo", "ssl_verify", "callback_url"]
         }
     },
     "required": ["default"],
