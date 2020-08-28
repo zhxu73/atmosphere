@@ -10,4 +10,5 @@ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:
   workflow_base_dir: "/opt/dev/atmosphere-argo/"
 
   zoneinfo: "/usr/share/zoneinfo/US/Arizona"
+  callback_url: "https://localhost/callback"
   callback_token: "bbbbbbbbbbbbbbbbbbbbbbbbbb"
