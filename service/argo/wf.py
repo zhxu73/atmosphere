@@ -259,6 +259,10 @@ class ArgoWorkflowStatus:
     Status of a workflow
     """
     __slots__ = ["_complete", "_success", "_error"]
+    all_status_literals = [
+        "Pending", "Running", "Succeeded", "Skipped", "Failed", "Error",
+        "Omitted"
+    ]
 
     def __init__(self, complete=None, success=None, error=None):
         """

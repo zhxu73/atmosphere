@@ -10,6 +10,7 @@ from api.v2.exceptions import failure_response
 from threepio import logger
 from service.callback import all_handlers
 from service.argo.common import read_argo_config
+from service.argo.wf import ArgoWorkflowStatus
 
 
 class WorkflowCallbackView(APIView):
@@ -32,7 +33,7 @@ class WorkflowCallbackView(APIView):
             now_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             logger.debug("{}, callback request received".format(now_time))
 
-            failure_resp = _verify_data(request.data)
+            failure_resp = _check_data(request.data)
             if failure_resp:
                 return failure_resp
 
@@ -59,8 +60,17 @@ class WorkflowCallbackView(APIView):
             )
 
 
-def _verify_data(req_data):
-    # find workflow
+def _check_data(req_data):
+    """
+    Check for the validity of the request data, missing key, wrong type, etc.
+
+    Args:
+        req_data (dict): request data
+
+    Returns:
+        [Response, optional]: failure response if request has bad data, None if request data is good
+    """
+    # check workflow name
     if "workflow_name" not in req_data:
         return failure_response(
             status.HTTP_400_BAD_REQUEST, "missing workflow name"
@@ -71,7 +81,23 @@ def _verify_data(req_data):
             status.HTTP_400_BAD_REQUEST, "workflow name ill-formed"
         )
 
-    # verify callback token
+    # check workflow status
+    if "workflow_status" not in req_data:
+        return failure_response(
+            status.HTTP_400_BAD_REQUEST, "missing workflow status"
+        )
+    if not isinstance(req_data["workflow_status"], str
+                     ) and not isinstance(req_data["workflow_status"], unicode):
+        return failure_response(
+            status.HTTP_400_BAD_REQUEST, "workflow status ill-formed"
+        )
+    if req_data["workflow_status"
+               ] not in ArgoWorkflowStatus.all_status_literals:
+        return failure_response(
+            status.HTTP_400_BAD_REQUEST, "unrecognized workflow status"
+        )
+
+    # check callback token
     if "callback_token" not in req_data:
         return failure_response(
             status.HTTP_400_BAD_REQUEST, "missing callback token"
