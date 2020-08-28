@@ -22,3 +22,4 @@ freezegun
 pathlib
 vulture
 yapf
+responses
