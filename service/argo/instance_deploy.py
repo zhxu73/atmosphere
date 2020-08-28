@@ -10,7 +10,7 @@ import atmosphere
 
 from service.argo.wf_call import argo_workflow_exec
 from service.argo.common import argo_context_from_config, read_argo_config
-from service.argo.exception import WorkflowFailed, WorkflowErrored, ArgoConfigFileError
+from service.argo.exception import ArgoConfigFileError
 
 
 def argo_deploy_instance(
@@ -37,24 +37,19 @@ def argo_deploy_instance(
             provider_uuid, instance_uuid, server_ip, username, timezone
         )
 
-        wf, status = argo_workflow_exec(
+        wf, _ = argo_workflow_exec(
             "instance_deploy.yml",
             provider_uuid,
             wf_data,
             config_file_path=settings.ARGO_CONFIG_FILE_PATH,
-            wait=True
+            wait=False
         )
 
         # dump logs
         _dump_deploy_logs(wf, username, instance_uuid)
 
-        celery_logger.debug("ARGO, workflow complete")
-        celery_logger.debug(status)
+        celery_logger.debug("ARGO, workflow {} launched".format(wf.wf_name))
 
-        if not status.success:
-            if status.error:
-                raise WorkflowErrored(wf.wf_name)
-            raise WorkflowFailed(wf.wf_name)
     except Exception as exc:
         celery_logger.debug(
             "ARGO, argo_deploy_instance(), {}, {}".format(type(exc), exc)
