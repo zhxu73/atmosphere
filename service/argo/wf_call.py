@@ -98,14 +98,14 @@ def argo_wf_template_exec(
         # submit workflow template
         wf_temp = ArgoWorkflowTemplate.create(context, wf_temp_def)
         wf_name = wf_temp.execute(context, wf_param=workflow_data)
-        wf = ArgoWorkflow(wf_name)
+        wf = ArgoWorkflow(context, wf_name)
 
         # polling if needed
         if wait:
-            status = wf.watch(context, 10, 18)
+            status = wf.watch(10, 18)
             if status.complete:
                 return (wf_name, status)
-            status = wf.watch(context, 60, 1440)
+            status = wf.watch(60, 1440)
             return (wf, status)
         return (wf, {"complete": None, "success": None, "error": None})
 

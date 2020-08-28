@@ -12,12 +12,14 @@ class ArgoWorkflow:
     A generic interface for using Argo Worflow.
     """
 
-    def __init__(self, wf_name):
+    def __init__(self, context, wf_name):
         """Creates an ArgoWorkflow object from a workflow definition
 
         Args:
+            context (ArgoContext): the context of which the workflow exists in
             wf_def (dict): workflow definition read/parsed from yaml
         """
+        self._context = context
         self._wf_name = wf_name
         self._last_status = None
         self._wf_def = None
@@ -42,7 +44,7 @@ class ArgoWorkflow:
 
         json_resp = context.client().run_workflow(wf_def)
         wf_name = json_resp["metadata"]["name"]
-        return ArgoWorkflow(wf_name)
+        return ArgoWorkflow(context, wf_name)
 
     @staticmethod
     def create_n_watch(context, wf_def, wf_data={}):
@@ -60,10 +62,10 @@ class ArgoWorkflow:
         wf = ArgoWorkflow.create(context, wf_def, wf_data=wf_data)
 
         try:
-            wf.watch(context, 10, 18)
+            wf.watch(10, 18)
             if wf.last_status.complete:
                 return (wf, wf.last_status)
-            wf.watch(context, 60, 1440)
+            wf.watch(60, 1440)
         except Exception as exc:
             logger.debug(
                 "ARGO, ArgoWorkflow.create_n_watch(), while watching {}".format(
@@ -77,19 +79,16 @@ class ArgoWorkflow:
             raise exc
         return (wf, wf.last_status)
 
-    def status(self, context):
+    def status(self):
         """
         Query status of a workflow
-
-        Args:
-            context (ArgoContext): context to perform the query
 
         Returns:
             ArgoWorkflowStatus: status of workflow
         """
         try:
             # get workflow
-            json_obj = context.client().get_workflow(
+            json_obj = self.context.client().get_workflow(
                 self._wf_name, fields="status.phase"
             )
 
@@ -126,14 +125,13 @@ class ArgoWorkflow:
         except Exception as exc:
             raise exc
 
-    def watch(self, context, interval, repeat_count):
+    def watch(self, interval, repeat_count):
         """
         Watch the status of workflow, until the workflow is complete.
         This call will block as it is busy waiting.
         After a specified number of queries, the call will abort and return last status.
 
         Args:
-            context (ArgoContext): context to perform the query
             interval (int): interval(sec) in between query for status
             repeat_count (int): number of query for status to perform before abort
 
@@ -141,43 +139,39 @@ class ArgoWorkflow:
             ArgoWorkflowStatus: last status of the workflow
         """
         for _ in range(repeat_count):
-            status = self.status(context)
+            status = self.status()
             if status.complete:
                 return status
             time.sleep(interval)
         return status
 
-    def get_nodes(self, context):
+    def get_nodes(self):
         """
         Get info (io.argoproj.workflow.v1alpha1.NodeStatus) about the nodes
         (including pods) that this workflow consist of.
         Note: not all node has a corrsponding pod
 
-        Args:
-            context (ArgoContext): context used
-
         Returns:
             dict: a dict whose keys are node names, values are info of the corrsponding node
         """
-        json_resp = context.client().get_workflow(
+        json_resp = self.context.client().get_workflow(
             self._wf_name, fields="status.nodes"
         )
         return json_resp["status"]["nodes"]
 
-    def dump_pod_logs(self, context, pod_name, log_file_path):
+    def dump_pod_logs(self, pod_name, log_file_path):
         """
         Dump logs of a pod in the workflow into a log file at the given path.
         Technically, it is node_name, calling it the method dump_pod_logs & argument
         pod_name is just to conform to the name in the url in swagger doc.
 
         Args:
-            context (ArgoContext): context used to fetch the logs
             pod_name (str): name of the pod
             log_file_path (str): path to the log file
         """
         # find out what pods the workflow is consisted of
         with open(log_file_path, "a+") as log_file:
-            logs_lines = context.client().get_log_for_pod_in_workflow(
+            logs_lines = self.context.client().get_log_for_pod_in_workflow(
                 self.wf_name, pod_name, container_name="main"
             )
             log_file.write("\n".join(logs_lines))
@@ -186,18 +180,17 @@ class ArgoWorkflow:
             ).format(self.wf_name, pod_name, log_file_path)
         )
 
-    def dump_logs(self, context, log_dir):
+    def dump_logs(self, log_dir):
         """
         Dump logs of the workflow into the log directory provided.
         Separate log file for each pods/steps in the workflow, each with the
         filename of {{pod_name}}.log
 
         Args:
-            context (ArgoContext): context used to fetch the logs
             log_dir (str): directory to dump logs into
         """
         # find out what pods the workflow is consisted of
-        json_resp = context.client().get_workflow(self.wf_name)
+        json_resp = self.context.client().get_workflow(self.wf_name)
         pod_names = json_resp["status"]["nodes"].keys()
 
         # dump logs in separate files for each pods
@@ -212,7 +205,7 @@ class ArgoWorkflow:
                         self.wf_name, len(pod_names)
                     )
                 )
-                logs_lines = context.client().get_log_for_pod_in_workflow(
+                logs_lines = self.context.client().get_log_for_pod_in_workflow(
                     self.wf_name, pod_name, container_name="main"
                 )
                 dump_file.write("\npod {}:\n".format(pod_name))
@@ -221,6 +214,16 @@ class ArgoWorkflow:
                 ("ARGO, log dump for workflow {}, pod {} at: {}\n"
                 ).format(self.wf_name, pod_name, log_file_path)
             )
+
+    @property
+    def context(self):
+        """
+        Context that this workflow exists in
+
+        Returns:
+            ArgoContext: context
+        """
+        return self._context
 
     @property
     def wf_name(self):
@@ -238,17 +241,16 @@ class ArgoWorkflow:
         """
         return self._last_status
 
-    def wf_def(self, context, fetch=True):
+    def wf_def(self, fetch=True):
         """
         Definition of the workflow, will fetch if absent
 
         Args:
-            context (ArgoContext): Argo context
             fetch (bool, optional): whether to fetch or not if present. Defaults to True.
         """
         if self._wf_def and not fetch:
             return self._wf_def
-        self._wf_def = context.client().get_workflow(
+        self._wf_def = self.context.client().get_workflow(
             self._wf_name, fields="-status"
         )
         return self._wf_def
