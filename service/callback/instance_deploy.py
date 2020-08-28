@@ -6,7 +6,7 @@ from threepio import logger
 
 from core.models import Instance
 from service.cache import get_cached_driver
-from service.tasks.driver import get_deploy_chain_second_half
+from service.tasks.driver import get_deploy_chain_second_half, update_metadata
 from service.callback.common import WorkflowCallbackHandler
 
 
@@ -47,7 +47,9 @@ class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
 
     def handle(self, workflow_name, json_payload):
         """
-        Handle the workflow callback
+        Handle the workflow callback.
+        Continue the rest of the deployment if workflow succeeded.
+        Declare deploy failure if workflow not succeeded (Error, Failed, etc.).
 
         Args:
             workflow_name (str): name of the workflow
@@ -64,7 +66,13 @@ class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
             "WF callback, {}, {}, {}".format(username, instance_uuid, identity)
         )
 
-        continue_deployment(instance_uuid, identity, username)
+        wf_status = json_payload["workflow_status"]
+        if wf_status == "Succeeded":
+            continue_deployment(instance_uuid, identity, username)
+        else:
+            deploy_workflow_failed(
+                workflow_name, instance_uuid, identity, username
+            )
 
 
 def continue_deployment(instance_uuid, core_identity, username):
@@ -75,6 +83,9 @@ def continue_deployment(instance_uuid, core_identity, username):
         instance_uuid (str): uuid  of the instance that is deploying by the workflow
         core_identity (core.models.Identity): identity associated with the instance
         username (str): username of the owner
+
+    Raises:
+        ValueError: No OS Instance Found
     """
     # find the OSInstance
     driver = get_cached_driver(identity=core_identity)
@@ -93,3 +104,49 @@ def continue_deployment(instance_uuid, core_identity, username):
         redeploy=False
     )
     chain.apply_async()
+
+
+def deploy_workflow_failed(
+    workflow_name, instance_uuid, core_identity, username
+):
+    """
+    Declare the deployment as failed, change instance status
+
+    Args:
+        workflow_name (str): name of the workflow failed
+        instance_uuid (str): uuid  of the instance that is deploying by the workflow
+        core_identity (core.models.Identity): identity associated with the instance
+        username (str): username of the owner
+
+    Raises:
+        ValueError: No OS Instance Found
+        exc: exception while launching updating metadata task
+    """
+    # find the OSInstance
+    driver = get_cached_driver(identity=core_identity)
+    instance = driver.get_instance(instance_uuid)
+    if not instance:
+        raise ValueError("no OS instance found")
+
+    try:
+        metadata = {
+            'tmp_status': 'deploy_error',
+            'fault_message': "workflow {} failed".format(workflow_name),
+            'fault_trace': ""
+        }
+        update_metadata.s(
+            OSDriver,
+            driver.provider,
+            driver.identity,
+            instance.id,
+            metadata,
+            replace_metadata=False
+        ).apply_async()
+        # Send deploy email
+        logger.debug(
+            "deploy_workflow_failed(), user {}, instance {}, workflow {}".
+            format(username, instance_uuid, workflow_name)
+        )
+    except Exception as exc:
+        logger.warn(exc)
+        raise exc
