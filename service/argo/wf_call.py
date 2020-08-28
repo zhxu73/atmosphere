@@ -5,7 +5,7 @@ Execute Argo Workflow
 from threepio import celery_logger as logger
 
 from service.argo.common import ArgoContext, argo_lookup_yaml_file, read_argo_config
-from service.argo.wf import ArgoWorkflow, ArgoWorkflowStatus
+from service.argo.wf import ArgoWorkflow
 from service.argo.wf_temp import ArgoWorkflowTemplate
 
 
@@ -51,7 +51,7 @@ def argo_workflow_exec(
             result = ArgoWorkflow.create_n_watch(context, wf_def, workflow_data)
             return result
         wf = ArgoWorkflow.create(context, wf_def, workflow_data)
-        return (wf, ArgoWorkflowStatus())
+        return (wf, None)
     except Exception as exc:
         logger.exception(
             "ARGO, argo_workflow_exec(), {} {}".format(type(exc), exc)

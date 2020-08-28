@@ -94,34 +94,11 @@ class ArgoWorkflow:
 
             # unknown state
             if "status" not in json_obj or "phase" not in json_obj["status"]:
-                self._last_status = ArgoWorkflowStatus(complete=False)
+                self._last_status = ArgoWorkflowStatus("", no_status=True)
                 return self._last_status
 
             phase = json_obj["status"]["phase"]
-
-            if phase == "Running":
-                self._last_status = ArgoWorkflowStatus(complete=False)
-                return self._last_status
-
-            if phase == "Succeeded":
-                self._last_status = ArgoWorkflowStatus(
-                    complete=True, success=True
-                )
-                return self._last_status
-
-            if phase == "Failed":
-                self._last_status = ArgoWorkflowStatus(
-                    complete=True, success=False
-                )
-                return self._last_status
-
-            if phase == "Error":
-                self._last_status = ArgoWorkflowStatus(
-                    complete=True, success=False, error=True
-                )
-                return self._last_status
-
-            return ArgoWorkflowStatus()
+            return ArgoWorkflowStatus(phase)
         except Exception as exc:
             raise exc
 
@@ -260,46 +237,81 @@ class ArgoWorkflowStatus:
     """
     Status of a workflow
     """
-    __slots__ = ["_complete", "_success", "_error"]
+    __slots__ = ["_status"]
     all_status_literals = [
         "Pending", "Running", "Succeeded", "Skipped", "Failed", "Error",
         "Omitted"
     ]
 
-    def __init__(self, complete=None, success=None, error=None):
+    def __init__(self, status_literal, no_status=False):
         """
         Args:
-            complete (bool, optional): whether the workflow has completed
-            success (bool, optional): whether the workflow has succeed
-            error (bool, optional): whether the workflow has errored out
+            status_literal: status literal of the workflow
         """
-        self._complete = complete
-        self._success = success
-        self._error = error
+        if no_status:
+            self._status = None
+            return
+
+        if status_literal not in ArgoWorkflowStatus.all_status_literals:
+            raise ValueError("Unrecognizable workflow status")
+        self._status = status_literal
+
+    @property
+    def no_status(self):
+        """
+        Returns:
+            bool: True if no status is available
+        """
+        return self._status is None
 
     @property
     def complete(self):
         """
         Returns:
-            bool: whether the workflow has completed
+            bool: whether the workflow has completed, None if not status available
         """
-        return self._complete
+        if self._status is None:
+            return None
+        if self._status == "Pending":
+            return False
+        if self._status == "Running":
+            return False
+        return True
 
     @property
     def success(self):
         """
         Returns:
-            bool: whether the workflow has succeed
+            bool: whether the workflow has succeed, None if not status available
         """
-        return self._success
+        if self._status is None:
+            return None
+        return self._status == "Succeeded"
 
     @property
     def error(self):
         """
         Returns:
-            bool: whether the workflow has errored out
+            bool: whether the workflow has errored out, None if not status available
         """
-        return self._error
+        if self._status is None:
+            return None
+        return self._status == "Error" or self._status == "Failed"
+
+    @property
+    def status(self):
+        """
+        Returns:
+            str: status literal of the workflow
+        """
+        return self._status
+
+    def __repr__(self):
+        """
+        Returns:
+            str: status literal of the workflow
+        """
+        return str(self._status)
 
 
 def _populate_wf_data(wf_def, wf_data):
