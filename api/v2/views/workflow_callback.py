@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from api.v2.exceptions import failure_response
 from threepio import logger
 from service.callback import all_handlers
-from service.argo.common import read_argo_config
-from service.argo.wf import ArgoWorkflowStatus
+from service.argo.common import read_argo_config, argo_context_from_config
+from service.argo.wf import ArgoWorkflow, ArgoWorkflowStatus
 
 
 class WorkflowCallbackView(APIView):
@@ -121,12 +121,12 @@ def _verify_workflow(workflow_name):
     Args:
         context (ArgoContext): context of the workflow
         workflow_name (str): name of the workflow
-
-    Raises:
-        Exception: TODO use specific execption type
     """
-    # raise Exception("invalid workflow")
-    pass
+    context = argo_context_from_config()
+    wf = ArgoWorkflow(context, workflow_name)
+    status = wf.status()
+    if status.complete:
+        raise ValueError("completed workflow should not callback")
 
 
 def _verify_callback_token(workflow_name, callback_token):
