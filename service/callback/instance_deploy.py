@@ -8,6 +8,9 @@ from core.models import Instance
 from service.cache import get_cached_driver
 from service.tasks.driver import get_deploy_chain_second_half, update_metadata
 from service.callback.common import WorkflowCallbackHandler
+from service.argo.wf import ArgoWorkflow
+from service.argo.instance_deploy import dump_deploy_logs
+from service.argo.common import argo_context_from_config
 
 
 class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
@@ -66,6 +69,12 @@ class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
             "WF callback, {}, {}, {}".format(username, instance_uuid, identity)
         )
 
+        # dump logs
+        context = argo_context_from_config()
+        wf = ArgoWorkflow(context, workflow_name)
+        dump_deploy_logs(wf, username, instance_uuid)
+
+        # handle callback based on wf status
         wf_status = json_payload["workflow_status"]
         if wf_status == "Succeeded":
             continue_deployment(instance_uuid, identity, username)

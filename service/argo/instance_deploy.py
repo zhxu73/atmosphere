@@ -44,10 +44,6 @@ def argo_deploy_instance(
             config_file_path=settings.ARGO_CONFIG_FILE_PATH,
             wait=False
         )
-
-        # dump logs
-        _dump_deploy_logs(wf, username, instance_uuid)
-
         celery_logger.debug("ARGO, workflow {} launched".format(wf.wf_name))
 
     except Exception as exc:
@@ -202,7 +198,7 @@ def _create_deploy_log_dir(username, instance_uuid, timestamp):
     return directory
 
 
-def _dump_deploy_logs(wf, username, instance_uuid):
+def dump_deploy_logs(wf, username, instance_uuid):
     """
     Dump workflow logs locally
 
@@ -212,13 +208,11 @@ def _dump_deploy_logs(wf, username, instance_uuid):
         instance_uuid (str): uuid of the instance
     """
     try:
-        context = argo_context_from_config(settings.ARGO_CONFIG_FILE_PATH)
-
         timestamp = time.strftime("%Y-%m-%d_%H%M%S", time.localtime())
         log_dir = _create_deploy_log_dir(username, instance_uuid, timestamp)
 
         # fetch all info about pods in workflow
-        nodes = wf.get_nodes(context)
+        nodes = wf.get_nodes()
 
         for node_name, node in nodes.items():
             playbook_name = None
@@ -233,7 +227,7 @@ def _dump_deploy_logs(wf, username, instance_uuid):
             else:
                 # uses node name if playbook filename is not found
                 log_filename = os.path.join(log_dir, node_name + ".log")
-            wf.dump_pod_logs(context, node_name, log_filename)
+            wf.dump_pod_logs(node_name, log_filename)
     except Exception as exc:
         celery_logger.debug(
             "ARGO, failed to dump logs for workflow {}, {}".format(
