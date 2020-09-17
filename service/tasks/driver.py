@@ -1218,7 +1218,7 @@ def _deploy_instance(
         # TODO: use provider.location until there is short name for provider
         argo_deploy_instance(
             str(provider.uuid), instance_id, instance.ip, username,
-            provider.timezone
+            provider.timezone, redeploy=redeploy
         )
         _update_status_log(
             instance, "ARGO, Ansible Finished for %s." % instance.ip

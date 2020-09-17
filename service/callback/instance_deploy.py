@@ -48,6 +48,24 @@ class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
                 )
             )
 
+        if "redeploy" not in json_payload:
+            raise KeyError("missing redeploy")
+        if isinstance(json_payload["redeploy"], str) or isinstance(
+            json_payload["redeploy"], unicode
+        ):
+            if json_payload["redeploy"] not in["false", "true", "False", "True"]:
+                raise ValueError(
+                    "redeploy is not a recognizable string, {}".format(
+                        json_payload["redeploy"]
+                    )
+                )
+        elif not isinstance(json_payload["redeploy"], bool):
+            raise ValueError(
+                "redeploy not string or bool, {}".format(
+                    type(json_payload["redeploy"])
+                )
+            )
+
     def handle(self, workflow_name, json_payload):
         """
         Handle the workflow callback.
@@ -69,6 +87,14 @@ class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
             "WF callback, {}, {}, {}".format(username, instance_uuid, identity)
         )
 
+        if not isinstance(json_payload["redeploy"], bool):
+            if json_payload["redeploy"] in ["true", "True"]:
+                redeploy = True
+            elif json_payload["redeploy"] in ["false", "False"]:
+                redeploy = False
+        else:
+            redeploy = json_payload["redeploy"]
+
         # dump logs
         context = argo_context_from_config()
         wf = ArgoWorkflow(context, workflow_name)
@@ -77,14 +103,14 @@ class InstanceDeployCallbackHandler(WorkflowCallbackHandler):
         # handle callback based on wf status
         wf_status = json_payload["workflow_status"]
         if wf_status == "Succeeded":
-            continue_deployment(instance_uuid, identity, username)
+            continue_deployment(instance_uuid, identity, username, redeploy)
         else:
             deploy_workflow_failed(
                 workflow_name, instance_uuid, identity, username
             )
 
 
-def continue_deployment(instance_uuid, core_identity, username):
+def continue_deployment(instance_uuid, core_identity, username, redeploy):
     """
     Continue the 2nd half of the deployment after the workflow
 
@@ -110,7 +136,7 @@ def continue_deployment(instance_uuid, core_identity, username):
         instance,
         core_identity,
         username=None,
-        redeploy=False
+        redeploy=redeploy
     )
     chain.apply_async()
 

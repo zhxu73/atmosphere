@@ -19,6 +19,7 @@ def argo_deploy_instance(
     server_ip,
     username,
     timezone,
+    redeploy=False
 ):
     """
     run Argo workflow to deploy an instance
@@ -34,7 +35,7 @@ def argo_deploy_instance(
     """
     try:
         wf_data = _get_workflow_data(
-            provider_uuid, instance_uuid, server_ip, username, timezone
+            provider_uuid, instance_uuid, server_ip, username, timezone, redeploy=redeploy
         )
 
         wf, _ = argo_workflow_exec(
@@ -54,7 +55,7 @@ def argo_deploy_instance(
 
 
 def _get_workflow_data(
-    provider_uuid, instance_uuid, server_ip, username, timezone
+    provider_uuid, instance_uuid, server_ip, username, timezone, redeploy
 ):
     """
     Generate the data structure to be passed to the workflow
@@ -99,6 +100,12 @@ def _get_workflow_data(
         {
             "name": "tz",
             "value": timezone
+        }
+    )
+    wf_data["spec"]["arguments"]["parameters"].append(
+        {
+            "name": "redeploy",
+            "value": redeploy
         }
     )
 
